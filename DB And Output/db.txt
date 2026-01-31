@@ -1,0 +1,151 @@
+Microsoft Windows [Version 10.0.26200.7623]
+(c) Microsoft Corporation. All rights reserved.
+
+C:\Users\LENOVO>mysql -u root -p
+Enter password: ****
+Welcome to the MySQL monitor.  Commands end with ; or \g.
+Your MySQL connection id is 17
+Server version: 8.0.43 MySQL Community Server - GPL
+
+Copyright (c) 2000, 2025, Oracle and/or its affiliates.
+
+Oracle is a registered trademark of Oracle Corporation and/or its
+affiliates. Other names may be trademarks of their respective
+owners.
+
+Type 'help;' or '\h' for help. Type '\c' to clear the current input statement.
+
+mysql> use khatabook;
+Database changed
+mysql> show tables;
++---------------------+
+| Tables_in_khatabook |
++---------------------+
+| customers           |
+| transactions        |
+| users               |
++---------------------+
+3 rows in set (0.05 sec)
+
+mysql> describe customers;
++---------+--------------+------+-----+---------+----------------+
+| Field   | Type         | Null | Key | Default | Extra          |
++---------+--------------+------+-----+---------+----------------+
+| id      | int          | NO   | PRI | NULL    | auto_increment |
+| user_id | int          | YES  |     | NULL    |                |
+| name    | varchar(100) | YES  |     | NULL    |                |
+| phone   | varchar(15)  | YES  |     | NULL    |                |
++---------+--------------+------+-----+---------+----------------+
+4 rows in set (0.02 sec)
+
+mysql> describe users;
++----------+--------------+------+-----+---------+----------------+
+| Field    | Type         | Null | Key | Default | Extra          |
++----------+--------------+------+-----+---------+----------------+
+| id       | int          | NO   | PRI | NULL    | auto_increment |
+| name     | varchar(100) | YES  |     | NULL    |                |
+| email    | varchar(100) | YES  | UNI | NULL    |                |
+| password | varchar(100) | YES  |     | NULL    |                |
++----------+--------------+------+-----+---------+----------------+
+4 rows in set (0.00 sec)
+
+mysql> describe transactions;
++-------------+--------------+------+-----+-------------------+-------------------+
+| Field       | Type         | Null | Key | Default           | Extra             |
++-------------+--------------+------+-----+-------------------+-------------------+
+| id          | int          | NO   | PRI | NULL              | auto_increment    |
+| customer_id | int          | YES  |     | NULL              |                   |
+| amount      | double       | YES  |     | NULL              |                   |
+| type        | varchar(10)  | YES  |     | NULL              |                   |
+| note        | varchar(255) | YES  |     | NULL              |                   |
+| date        | timestamp    | YES  |     | CURRENT_TIMESTAMP | DEFAULT_GENERATED |
++-------------+--------------+------+-----+-------------------+-------------------+
+6 rows in set (0.00 sec)
+
+mysql> select * from users;
++----+--------------+---------------------+----------+
+| id | name         | email               | password |
++----+--------------+---------------------+----------+
+|  1 | shivtej      | shivtej@gmail.com   | 7757     |
+|  2 | shivtej      | shivtej7@gmail.com  | 7757     |
+|  3 | Shivej pawar | shivtej@example.com | 7757     |
+|  4 | Tejas        | t@gamil.com         | 7757     |
+|  5 | Om           | a@gmail.com         | 123456   |
++----+--------------+---------------------+----------+
+5 rows in set (0.00 sec)
+
+mysql> select * from transactions;
++----+-------------+--------------+------+--------+---------------------+
+| id | customer_id | amount       | type | note   | date                |
++----+-------------+--------------+------+--------+---------------------+
+|  1 |           1 |            3 | gave |        | 2026-01-22 15:38:09 |
+|  2 |           1 |         2000 | got  |        | 2026-01-22 15:38:17 |
+|  3 |           1 |         1000 | gave | cofee  | 2026-01-22 15:54:46 |
+|  4 |           1 |           -9 | gave |        | 2026-01-22 16:00:06 |
+|  5 |           1 |          200 | gave |        | 2026-01-22 16:07:01 |
+|  6 |           1 |           20 | gave |        | 2026-01-22 16:07:06 |
+|  7 |           1 |         2000 | got  |        | 2026-01-22 16:07:12 |
+|  8 |           1 |         3000 | got  |        | 2026-01-22 16:07:18 |
+|  9 |           1 |        50000 | gave |        | 2026-01-22 16:07:32 |
+| 10 |           2 |         5000 | gave | Dinner | 2026-01-22 17:00:56 |
+| 11 |           2 |         5000 | got  | cofee  | 2026-01-22 17:01:09 |
+| 12 |           2 |         5000 | got  |        | 2026-01-22 17:01:59 |
+| 13 |           2 |          200 | got  |        | 2026-01-22 17:04:21 |
+| 14 |           2 |          200 | gave |        | 2026-01-22 17:04:27 |
+| 15 |           2 |         2000 | gave |        | 2026-01-22 17:06:09 |
+| 16 |           1 |        44214 | gave |        | 2026-01-22 17:06:40 |
+| 17 |           3 |        10000 | gave |        | 2026-01-22 17:22:57 |
+| 18 |           4 |         1000 | gave |        | 2026-01-22 19:39:41 |
+| 19 |           4 |         2000 | got  |        | 2026-01-22 19:39:54 |
+| 20 |           2 |          700 | gave |        | 2026-01-22 20:00:29 |
+| 21 |           1 |        20000 | gave |        | 2026-01-22 20:22:36 |
+| 22 |           4 |         7000 | got  |        | 2026-01-22 21:08:33 |
+| 23 |           4 |          800 | gave | Dinner | 2026-01-22 21:08:42 |
+| 24 |           4 |          300 | gave |        | 2026-01-22 21:26:11 |
+| 25 |           4 |          100 | got  |        | 2026-01-22 21:26:20 |
+| 26 |           1 |         1000 | gave |        | 2026-01-22 22:18:13 |
+| 27 |           1 |         1000 | gave |        | 2026-01-22 22:18:19 |
+| 28 |           1 |         1000 | gave |        | 2026-01-22 22:35:23 |
+| 29 |           1 |          700 | gave |        | 2026-01-24 16:07:06 |
+| 30 |           1 |          500 | got  |        | 2026-01-24 17:23:08 |
+| 31 |           1 |         1000 | gave |        | 2026-01-24 17:34:49 |
+| 32 |           1 |        10000 | got  |        | 2026-01-24 17:34:56 |
+| 33 |           1 |    100000000 | gave |        | 2026-01-24 17:35:01 |
+| 34 |           1 |         1000 | gave |        | 2026-01-24 17:35:08 |
+| 35 |           1 |     10000000 | got  |        | 2026-01-24 17:35:20 |
+| 36 |           1 | 100000000000 | got  |        | 2026-01-24 17:35:28 |
+| 37 |           6 |          100 | gave |        | 2026-01-27 18:51:55 |
+| 38 |           9 |           10 | gave |        | 2026-01-27 19:13:40 |
+| 39 |           9 |           10 | got  |        | 2026-01-27 19:13:45 |
+| 40 |           9 |          100 | gave |        | 2026-01-27 19:13:51 |
+| 41 |           9 |          100 | gave | cofee  | 2026-01-27 19:14:01 |
+| 42 |          10 |          100 | gave |        | 2026-01-27 21:00:22 |
+| 43 |          10 |         1000 | got  | cofee  | 2026-01-27 21:00:30 |
+| 44 |          11 |         1000 | gave | Dinner | 2026-01-27 21:45:26 |
+| 45 |          11 |          200 | got  |        | 2026-01-27 21:45:33 |
+| 46 |          16 |          100 | gave |        | 2026-01-28 10:44:01 |
+| 47 |          17 |         1000 | gave |        | 2026-01-31 12:03:49 |
+| 48 |          17 |          100 | got  |        | 2026-01-31 12:03:53 |
++----+-------------+--------------+------+--------+---------------------+
+48 rows in set (0.00 sec)
+
+mysql> select * from customers;
++----+---------+-------------------+-------+
+| id | user_id | name              | phone |
++----+---------+-------------------+-------+
+|  4 |       1 | Shivej pawar      |       |
+|  6 |       3 | shantoo b         |       |
+|  7 |       3 | om                |       |
+|  9 |       3 | tejass            |       |
+| 10 |       3 | Om Billade        |       |
+| 11 |       5 | Om B              |       |
+| 12 |       5 | Tejas Nikam       |       |
+| 13 |       5 | Shnatoo           |       |
+| 15 |       5 | Shivejpawar077777 |       |
+| 16 |       3 | Nikk              |       |
+| 17 |       4 | aa                |       |
++----+---------+-------------------+-------+
+11 rows in set (0.00 sec)
+
+mysql>
+mysql>
