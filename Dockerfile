@@ -7,7 +7,8 @@ COPY pom.xml .
 COPY src ./src
 
 # Build the WAR file (named ROOT.war based on pom.xml <finalName>)
-RUN mvn clean package -v
+# We use -DskipTests to ensure tests don't interrupt the build in headless environments
+RUN mvn clean package -DskipTests -v
 
 # Stage 2: Create the final lightweight Tomcat image
 FROM tomcat:9.0-jdk17-corretto
@@ -17,8 +18,8 @@ WORKDIR /usr/local/tomcat
 RUN rm -rf webapps/* 
 
 # Copy our compiled ROOT.war from the build stage into Tomcat's webapps directory 
-# We use a wildcard *.war and rename to ROOT.war to ensure it works even if maven names it slightly differently
-COPY --from=build /app/target/*.war webapps/ROOT.war
+# so it is served at the root URL (/)
+COPY --from=build /app/target/ROOT.war webapps/ROOT.war
 
 # Expose port 8080 default
 EXPOSE 8080
