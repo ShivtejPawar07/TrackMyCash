@@ -58,10 +58,9 @@
                 <artifactId>maven-war-plugin</artifactId>
                 <version>3.4.0</version>
                 <configuration>
-                    <webappDirectory>src/main/webapp</webappDirectory>
+                    <webappDirectory>${project.build.directory}/${project.build.finalName}</webappDirectory>
                     <warSourceDirectory>src/main/webapp</warSourceDirectory>
-                    <!-- Exclude hardcoded libs so Maven's downloaded ones take precedence -->
-                    <packagingExcludes>WEB-INF/lib/*.jar</packagingExcludes>
+                    <failOnMissingWebXml>false</failOnMissingWebXml>
                 </configuration>
             </plugin>
         </plugins>
