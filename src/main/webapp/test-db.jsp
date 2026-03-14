@@ -62,8 +62,8 @@
                 <td><%= user != null ? "<code>" + user + "</code>" : "<span style='color:#f87171'>MISSING</span>" %></td>
             </tr>
             <tr>
-                <td>DB_PASSWORD</td>
-                <td><%= password != null ? "<code>********</code>" : "<span style='color:#f87171'>MISSING</span>" %></td>
+                <td>Password Length</td>
+                <td><%= password != null ? password.length() + " chars" : "0" %></td>
             </tr>
             <tr>
                 <td>Response Time</td>
@@ -71,11 +71,19 @@
             </tr>
             <% if (error != null || System.getProperty("last_db_error") != null) { %>
             <tr>
-                <td>Error Message</td>
+                <td>Direct Error</td>
                 <td style="color:#f87171"><code><%= error != null ? error : System.getProperty("last_db_error") %></code></td>
             </tr>
             <% } %>
         </table>
+
+        <div style="margin-top: 1.5rem; padding: 1rem; background: rgba(59, 130, 246, 0.1); border-radius: 8px; font-size: 0.9rem;">
+            <h4 style="margin-top: 0;">Troubleshooting Tips:</h4>
+            <ul style="margin-bottom: 0;">
+                <li>If you see <b>"password authentication failed for user 'postgres'"</b>: Ensure <b>DB_USER</b> is set to the full string (e.g., <code>postgres.xxxx</code>) in Render.</li>
+                <li>If it still fails, try using the <b>Direct Connection</b> URL (Port 5432) instead of the Pooler URL.</li>
+            </ul>
+        </div>
 
         <div style="margin-top: 2rem;">
             <a href="login.jsp" style="color:#3b82f6; text-decoration: none;">&larr; Back to Login</a>

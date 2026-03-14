@@ -45,8 +45,19 @@ public class DBConnection {
                 }
 
                 Class.forName(driver);
-                con = DriverManager.getConnection(url, user, password);
-                System.out.println("[DBConnection] Connected to Supabase PostgreSQL successfully!");
+                
+                // Use Properties to ensure username/password are handled correctly even with special chars
+                java.util.Properties props = new java.util.Properties();
+                props.setProperty("user", user);
+                props.setProperty("password", password);
+                
+                // Supabase and most cloud DBs require SSL
+                if (!url.contains("sslmode=")) {
+                    props.setProperty("sslmode", "require");
+                }
+
+                con = DriverManager.getConnection(url, props);
+                System.out.println("[DBConnection] Connected to Supabase PostgreSQL successfully as user: " + user);
 
                 // Auto-create tables on first connection
                 if (!tablesCreated) {
@@ -56,7 +67,7 @@ public class DBConnection {
             }
         } catch (Exception e) {
             String errorMsg = e.getMessage();
-            System.err.println("[DBConnection] Connection failed: " + errorMsg);
+            System.err.println("[DBConnection] Connection failed for user [" + EnvLoader.get("DB_USER") + "]: " + errorMsg);
             // Store the last error for UI diagnostics
             System.setProperty("last_db_error", errorMsg != null ? errorMsg : "Unknown SQL Error");
             e.printStackTrace();
