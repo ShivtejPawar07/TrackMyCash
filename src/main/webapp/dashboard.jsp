@@ -6,14 +6,16 @@
 
 <%
     // Session Security Check
-    if(session.getAttribute("userId") == null){
-        response.sendRedirect(request.getContextPath() + "/login.jsp");
+    Object userIdObj = session.getAttribute("userId");
+    if(userIdObj == null){
+        System.out.println("[Dashboard JSP] No userId in session, redirecting to login...");
+        response.sendRedirect("login.jsp");
         return;
     }
     
-    int uid = (int)session.getAttribute("userId");
+    int uid = (int)userIdObj;
     String userName = (String)session.getAttribute("userName");
-    if (userName == null) userName = "User";
+    if (userName == null || userName.trim().isEmpty()) userName = "User";
 
     Connection con = null;
     String dbError = null;
@@ -22,7 +24,7 @@
     try {
         con = DBConnection.getConnection();
         if (con == null) {
-            dbError = "Database connection returned null. Check your Environment Variables.";
+            dbError = "Database connection returned null. Check your Environment Variables (DB_URL, DB_USER, DB_PASSWORD).";
         }
     } catch (Exception e) {
         dbError = e.getMessage();
@@ -46,65 +48,36 @@
     
     <style>
         :root {
-            --bg-dark: #0f172a;
-            --bg-card: #1e293b;
-            --bg-sidebar: #0f172a;
-            --text-main: #f8fafc;
-            --text-muted: #94a3b8;
-            --border-color: #334155;
-            --accent-primary: #3b82f6;
-            --accent-glow: rgba(59, 130, 246, 0.5);
-            --income-color: #10b981;
-            --expense-color: #ef4444;
-            --sidebar-width: 280px;
+            --bg-dark: #0f172a; --bg-card: #1e293b; --bg-sidebar: #0f172a;
+            --text-main: #f8fafc; --text-muted: #94a3b8; --border-color: #334155;
+            --accent-primary: #3b82f6; --accent-glow: rgba(59, 130, 246, 0.5);
+            --income-color: #10b981; --expense-color: #ef4444; --sidebar-width: 280px;
         }
-
         body.light-mode {
-            --bg-dark: #f8fafc;
-            --bg-card: #ffffff;
-            --bg-sidebar: #ffffff;
-            --text-main: #0f172a;
-            --text-muted: #64748b;
-            --border-color: #e2e8f0;
-            --accent-primary: #2563eb;
-            --accent-glow: rgba(37, 99, 235, 0.3);
+            --bg-dark: #f8fafc; --bg-card: #ffffff; --bg-sidebar: #ffffff;
+            --text-main: #0f172a; --text-muted: #64748b; --border-color: #e2e8f0;
+            --accent-primary: #2563eb; --accent-glow: rgba(37, 99, 235, 0.3);
         }
-
         body {
-            font-family: 'Inter', sans-serif;
-            background-color: var(--bg-dark);
-            color: var(--text-main);
-            margin: 0; padding: 0;
-            overflow-x: hidden;
-            transition: background-color 0.3s, color 0.3s;
+            font-family: 'Inter', sans-serif; background-color: var(--bg-dark); color: var(--text-main);
+            margin: 0; padding: 0; transition: background-color 0.3s, color 0.3s;
         }
-
         #app-wrapper { display: flex; height: 100vh; overflow: hidden; }
-
         #sidebar {
-            width: var(--sidebar-width);
-            background-color: var(--bg-sidebar);
-            border-right: 1px solid var(--border-color);
-            display: flex;
-            flex-direction: column;
-            transition: all 0.3s ease;
-            z-index: 1000;
+            width: var(--sidebar-width); background-color: var(--bg-sidebar); border-right: 1px solid var(--border-color);
+            display: flex; flex-direction: column; transition: all 0.3s ease; z-index: 1000;
         }
-
         .brand-box {
             height: 70px; display: flex; align-items: center; padding: 0 1.5rem;
-            border-bottom: 1px solid var(--border-color);
-            font-size: 1.25rem; font-weight: 700; color: var(--accent-primary);
-            text-decoration: none;
+            border-bottom: 1px solid var(--border-color); font-size: 1.25rem; font-weight: 700;
+            color: var(--accent-primary); text-decoration: none;
         }
         .brand-box i { margin-right: 10px; font-size: 1.5rem; }
-
         .search-box { padding: 1rem; border-bottom: 1px solid var(--border-color); }
         .search-box input {
             background-color: var(--bg-card); border: 1px solid var(--border-color);
             color: var(--text-main); border-radius: 8px; padding: 0.6rem 1rem; width: 100%;
         }
-
         .customer-list-container { flex: 1; overflow-y: auto; padding: 0.5rem 1rem; }
         .customer-item {
             display: flex; justify-content: space-between; align-items: center;
@@ -118,33 +91,27 @@
             display: flex; align-items: center; justify-content: center;
             color: white; font-weight: 600; margin-right: 10px; font-size: 0.85rem;
         }
-
         #main-content { flex: 1; display: flex; flex-direction: column; background-color: var(--bg-dark); overflow-y: auto; }
-
         .topbar {
             height: 70px; background-color: var(--bg-sidebar); border-bottom: 1px solid var(--border-color);
             display: flex; justify-content: space-between; align-items: center; padding: 0 2rem;
             position: sticky; top: 0; z-index: 100;
         }
-
         .fin-card {
             background-color: var(--bg-card); border-radius: 16px; padding: 1.5rem; border: 1px solid var(--border-color);
             box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); transition: transform 0.3s;
         }
         .fin-card.primary { background: linear-gradient(135deg, var(--accent-primary), #8b5cf6); color: white; border: none; }
         .fin-card:hover { transform: translateY(-5px); }
-
         .table-container { background-color: var(--bg-card); border: 1px solid var(--border-color); border-radius: 16px; overflow: hidden; }
         .badge-income { background-color: rgba(16, 185, 129, 0.1); color: var(--income-color); padding: 0.4em 0.8em; border-radius: 6px; font-weight: 600; }
         .badge-expense { background-color: rgba(239, 68, 68, 0.1); color: var(--expense-color); padding: 0.4em 0.8em; border-radius: 6px; font-weight: 600; }
-
         .fab-btn {
             position: fixed; bottom: 2rem; right: 2rem; width: 60px; height: 60px; border-radius: 50%;
             background: linear-gradient(135deg, var(--accent-primary), #8b5cf6);
             color: white; display: flex; align-items: center; justify-content: center;
             font-size: 1.5rem; box-shadow: 0 10px 25px var(--accent-glow); z-index: 90; border: none;
         }
-
         @media (max-width: 991px) {
             #sidebar { position: fixed; left: -100%; height: 100vh; }
             #sidebar.show { left: 0; }
@@ -173,22 +140,21 @@
                       while(rs.next()){
                           int cid2 = rs.getInt("id");
                           String cname = rs.getString("name");
-                          if(cname == null) cname = "Unknown";
+                          if(cname == null || cname.isEmpty()) cname = "Unknown";
                           
                           PreparedStatement balPS = con.prepareStatement(
                            "SELECT SUM(CASE WHEN type='got' THEN amount ELSE -amount END) b FROM transactions WHERE customer_id=?"
                           );
                           balPS.setInt(1, cid2);
                           ResultSet balRS = balPS.executeQuery();
-                          double b = 0;
-                          if(balRS.next()) b = balRS.getDouble("b");
+                          double b = 0; if(balRS.next()) b = balRS.getDouble("b");
                           overallBalance += b;
                           
                           String currentCid = request.getParameter("cid");
                           String activeClass = (currentCid != null && currentCid.equals(String.valueOf(cid2))) ? "active" : "";
             %>
             <a href="dashboard.jsp?cid=<%=cid2%>" class="customer-item <%=activeClass%>" data-name="<%=cname.toLowerCase()%>">
-                <div class="avatar"><%=cname.length() > 0 ? cname.substring(0, 1).toUpperCase() : "C"%></div>
+                <div class="avatar"><%= cname.substring(0, 1).toUpperCase() %></div>
                 <div class="customer-info">
                     <div style="font-weight:500;"><%=cname%></div>
                     <div style="font-size:0.8rem;" class="<%= b >= 0 ? "text-success" : "text-danger" %>">
@@ -200,11 +166,9 @@
                           balRS.close(); balPS.close();
                       } 
                       rs.close(); ps.close();
-                  } catch (Exception e) { out.println("<!-- Sidebar Data Error: " + e.getMessage() + " -->"); }
-              } else {
+                  } catch (Exception e) { out.println("<!-- Sidebar Error: " + e.getMessage() + " -->"); }
+              } 
             %>
-                <div class="p-3 text-muted small"><i class="fa-solid fa-circle-info me-1"></i> Connect database to view customers.</div>
-            <% } %>
         </div>
         <button class="add-customer-btn p-3 m-3 btn btn-primary" data-bs-toggle="modal" data-bs-target="#addCustomerModal">
             <i class="fa-solid fa-plus me-2"></i>Add Customer
@@ -234,7 +198,7 @@
             <% if (dbError != null) { %>
                 <div class="alert alert-danger shadow-sm border-0" style="border-radius: 12px; background: rgba(239, 68, 68, 0.1); color: #fecaca;">
                     <h5 class="fw-bold"><i class="fa-solid fa-triangle-exclamation me-2"></i>Database Connection Issue</h5>
-                    <p class="mb-0">Please ensure your environment variables are correctly set on Render. Error: <code><%= dbError %></code></p>
+                    <p class="mb-0">Please check your Render Environment Variables. Error: <code><%= dbError %></code></p>
                 </div>
             <% } %>
 
@@ -262,14 +226,13 @@
                 <div class="col-md-4">
                     <div class="fin-card">
                         <h5 class="mb-4">Recent Activity</h5>
-                        <p class="text-muted">Select a customer to view detailed transactions.</p>
+                        <p class="text-muted">Select a customer to view transactions.</p>
                     </div>
                 </div>
             </div>
             <% } else { 
                 int cid = Integer.parseInt(cidStr);
-                String cName = "";
-                double cTotal = 0;
+                String cName = ""; double cTotal = 0;
                 PreparedStatement ps = con.prepareStatement("SELECT * FROM customers WHERE id=?");
                 ps.setInt(1, cid);
                 ResultSet rs = ps.executeQuery();
@@ -292,22 +255,13 @@
                     <button class="btn btn-outline-danger" onclick="deleteCustomer('<%=cid%>')">Delete</button>
                 </div>
             </div>
-
             <div class="table-container shadow-sm">
                 <table class="table table-hover mb-0">
-                    <thead class="table-dark">
-                        <tr>
-                            <th>Date</th>
-                            <th>Note</th>
-                            <th class="text-end">Amount</th>
-                            <th class="text-center">Type</th>
-                        </tr>
-                    </thead>
+                    <thead class="table-dark"><tr><th>Date</th><th>Note</th><th class="text-end">Amount</th><th class="text-center">Type</th></tr></thead>
                     <tbody>
                         <%
                             PreparedStatement tps = con.prepareStatement("SELECT * FROM transactions WHERE customer_id=? ORDER BY date DESC");
-                            tps.setInt(1, cid);
-                            ResultSet trs = tps.executeQuery();
+                            tps.setInt(1, cid); ResultSet trs = tps.executeQuery();
                             SimpleDateFormat sdf = new SimpleDateFormat("dd MMM, yyyy hh:mm a");
                             while(trs.next()){
                                 String type = trs.getString("type");
@@ -316,11 +270,7 @@
                             <td><%= trs.getTimestamp("date") != null ? sdf.format(new java.util.Date(trs.getTimestamp("date").getTime())) : "-" %></td>
                             <td><%= trs.getString("note") != null ? trs.getString("note") : "-" %></td>
                             <td class="text-end fw-bold">₹<%=String.format("%.2f", trs.getDouble("amount"))%></td>
-                            <td class="text-center">
-                                <span class="<%= "got".equals(type) ? "badge-income" : "badge-expense" %>">
-                                    <%= "got".equals(type) ? "Received" : "Paid" %>
-                                </span>
-                            </td>
+                            <td class="text-center"><span class="<%= "got".equals(type) ? "badge-income" : "badge-expense" %>"><%= "got".equals(type) ? "Received" : "Paid" %></span></td>
                         </tr>
                         <% } trs.close(); tps.close(); %>
                     </tbody>
@@ -328,16 +278,9 @@
             </div>
             <button class="fab-btn" data-bs-toggle="modal" data-bs-target="#addTxnModal"><i class="fa-solid fa-plus"></i></button>
             <% } 
-                    } catch (Exception e) { 
-                        out.println("<div class='alert alert-warning'>Error processing content: " + e.getMessage() + "</div>");
-                    }
-                } else { %>
-                <div class="text-center mt-5">
-                    <i class="fa-solid fa-database fa-4x text-muted mb-3"></i>
-                    <h3>Ready to Track?</h3>
-                    <p class="text-muted">Once your database is connected, you'll see your financial summary here.</p>
-                </div>
-            <% } %>
+                    } catch (Exception e) { out.println("<div class='alert alert-warning'>Error: " + e.getMessage() + "</div>"); }
+                } 
+            %>
         </div>
     </div>
 </div>
@@ -350,7 +293,6 @@
 <% } %>
 
 <%@ include file="UpdateCustomer.jsp" %>
-
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 <script>
     function openEditCustomer(id, name, phone) {
@@ -359,8 +301,7 @@
         document.getElementById('editPhone').value = phone;
         new bootstrap.Modal(document.getElementById('editCustomerModal')).show();
     }
-    function deleteCustomer(id) { if(confirm("Delete customer?")) window.location.href="DeleteCustomerServlet?cid="+id; }
-    
+    function deleteCustomer(id) { if(confirm("Delete?")) window.location.href="DeleteCustomerServlet?cid="+id; }
     if(document.getElementById('monthlyChart')) {
         new Chart(document.getElementById('monthlyChart'), {
             type: 'line',

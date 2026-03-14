@@ -5,7 +5,9 @@ import javax.servlet.*;
 import javax.servlet.http.*;
 import java.io.IOException;
 import java.sql.*;
+import javax.servlet.annotation.WebServlet;
 
+@WebServlet("/LoginServlet")
 public class LoginServlet extends HttpServlet {
 
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
@@ -19,8 +21,17 @@ public class LoginServlet extends HttpServlet {
         String email = request.getParameter("email");
         String password = request.getParameter("password");
 
+        // Logging for Render debug
+        System.out.println("[LoginServlet] Attempting login for: " + email);
+
         try {
             Connection con = DBConnection.getConnection();
+            if (con == null) {
+                System.err.println("[LoginServlet] ERROR: Database connection is NULL");
+                response.sendRedirect("login.jsp?msg=Database connection error. Check Render log.");
+                return;
+            }
+
             PreparedStatement ps = con.prepareStatement(
                 "SELECT * FROM users WHERE email=? AND password=?"
             );
@@ -30,18 +41,25 @@ public class LoginServlet extends HttpServlet {
             ResultSet rs = ps.executeQuery();
 
             if (rs.next()) {
-                HttpSession session = request.getSession();
+                HttpSession session = request.getSession(true);
                 session.setAttribute("userId", rs.getInt("id"));
-                session.setAttribute("userName", rs.getString("name"));
-                // Using context path for more reliable redirection
-                response.sendRedirect(request.getContextPath() + "/dashboard.jsp");
+                
+                String name = rs.getString("name");
+                if (name == null || name.trim().isEmpty()) name = "User";
+                session.setAttribute("userName", name);
+                
+                System.out.println("[LoginServlet] Login SUCCESS for: " + email + ". Redirecting to dashboard...");
+                
+                // Using a relative redirect is often safer through proxies
+                response.sendRedirect("dashboard.jsp");
             } else {
-                response.sendRedirect(request.getContextPath() + "/login.jsp?msg=Invalid Credentials");
+                System.out.println("[LoginServlet] Login FAILED for: " + email);
+                response.sendRedirect("login.jsp?msg=Invalid Credentials");
             }
         } catch (Exception e) {
+            System.err.println("[LoginServlet] EXCEPTION: " + e.getMessage());
             e.printStackTrace();
-            // Important: Redirect to login with error message if an exception occurs (e.g., DB connection failure)
-            response.sendRedirect(request.getContextPath() + "/login.jsp?msg=System Error: " + e.getMessage());
+            response.sendRedirect("login.jsp?msg=System Error: " + e.getMessage());
         }
     }
 }
