@@ -23,6 +23,10 @@ public class DeleteCustomerServlet extends HttpServlet {
 
         try {
             Connection con = DBConnection.getConnection();
+            if (con == null) {
+                response.sendRedirect(request.getContextPath() + "/dashboard.jsp?error=db_fail");
+                return;
+            }
             PreparedStatement ps = con.prepareStatement(
                 "DELETE FROM customers WHERE id=? AND user_id=?"
             );

@@ -45,6 +45,10 @@ public class AddTransactionServlet extends HttpServlet {
 
         try {
             Connection con = DBConnection.getConnection();
+            if (con == null) {
+                response.sendRedirect(request.getContextPath() + "/dashboard.jsp?cid=" + cid + "&error=db_fail");
+                return;
+            }
             PreparedStatement ps = con.prepareStatement(
                 "INSERT INTO transactions(customer_id, amount, type, note) VALUES (?,?,?,?)"
             );

@@ -23,6 +23,10 @@ public class UpdateCustomerServlet extends HttpServlet {
 
     try {
       Connection con = DBConnection.getConnection();
+      if (con == null) {
+        response.sendRedirect(request.getContextPath() + "/dashboard.jsp?error=db_fail");
+        return;
+      }
 
       // CASE-INSENSITIVE DUPLICATE CHECK
       PreparedStatement check = con.prepareStatement(
