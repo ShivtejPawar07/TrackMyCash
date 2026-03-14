@@ -28,10 +28,11 @@ public class SignupServlet extends HttpServlet {
             ps.setString(3, password);
 
             ps.executeUpdate();
-            response.sendRedirect("login.jsp");
+            response.sendRedirect(request.getContextPath() + "/login.jsp?msg=Signup Successful! Please Login.");
 
         } catch (Exception e) {
             e.printStackTrace();
+            response.sendRedirect(request.getContextPath() + "/signup.jsp?msg=Signup Failed: " + e.getMessage());
         }
     }
 }

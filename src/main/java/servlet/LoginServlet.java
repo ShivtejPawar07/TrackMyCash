@@ -33,12 +33,15 @@ public class LoginServlet extends HttpServlet {
                 HttpSession session = request.getSession();
                 session.setAttribute("userId", rs.getInt("id"));
                 session.setAttribute("userName", rs.getString("name"));
-                response.sendRedirect("dashboard.jsp");
+                // Using context path for more reliable redirection
+                response.sendRedirect(request.getContextPath() + "/dashboard.jsp");
             } else {
-                response.sendRedirect("login.jsp?msg=Invalid Credentials");
+                response.sendRedirect(request.getContextPath() + "/login.jsp?msg=Invalid Credentials");
             }
         } catch (Exception e) {
             e.printStackTrace();
+            // Important: Redirect to login with error message if an exception occurs (e.g., DB connection failure)
+            response.sendRedirect(request.getContextPath() + "/login.jsp?msg=System Error: " + e.getMessage());
         }
     }
 }
