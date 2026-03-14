@@ -15,8 +15,7 @@ public class SignupServlet extends HttpServlet {
         String email = request.getParameter("email");
         String password = request.getParameter("password");
 
-        try {
-            Connection con = DBConnection.getConnection();
+        try (Connection con = DBConnection.getConnection()) {
             if (con == null) {
                 response.sendRedirect(request.getContextPath() + "/signup.jsp?msg=Signup Failed: Database connection unavailable. Visit <a href='test-db.jsp'>test-db.jsp</a> to check your Render environment variables.");
                 return;
@@ -30,11 +29,11 @@ public class SignupServlet extends HttpServlet {
             ps.setString(3, password);
 
             ps.executeUpdate();
-            response.sendRedirect("login.jsp?msg=Signup Successful! Please Login.");
+            response.sendRedirect(request.getContextPath() + "/login.jsp?msg=Signup Successful! Please Login.");
 
         } catch (Exception e) {
             e.printStackTrace();
-            response.sendRedirect("signup.jsp?msg=Signup Failed: " + e.getMessage());
+            response.sendRedirect(request.getContextPath() + "/signup.jsp?msg=Signup Failed: " + e.getMessage());
         }
     }
 }

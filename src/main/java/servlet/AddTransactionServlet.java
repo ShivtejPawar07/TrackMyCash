@@ -43,8 +43,7 @@ public class AddTransactionServlet extends HttpServlet {
         }
 
 
-        try {
-            Connection con = DBConnection.getConnection();
+        try (Connection con = DBConnection.getConnection()) {
             if (con == null) {
                 response.sendRedirect(request.getContextPath() + "/dashboard.jsp?cid=" + cid + "&error=db_fail");
                 return;
@@ -58,10 +57,11 @@ public class AddTransactionServlet extends HttpServlet {
             ps.setString(4, note);
 
             ps.executeUpdate();
-            response.sendRedirect("dashboard.jsp?cid=" + cid);
+            response.sendRedirect(request.getContextPath() + "/dashboard.jsp?cid=" + cid);
 
         } catch (Exception e) {
             e.printStackTrace();
+            response.sendRedirect(request.getContextPath() + "/dashboard.jsp?error=system");
         }
     }
 }

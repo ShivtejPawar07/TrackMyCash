@@ -23,8 +23,7 @@ public class AddCustomerServlet extends HttpServlet {
         String name = request.getParameter("name");
         String phone = request.getParameter("phone");
 
-        try {
-            Connection con = DBConnection.getConnection();
+        try (Connection con = DBConnection.getConnection()) {
             if (con == null) {
                 response.sendRedirect(request.getContextPath() + "/dashboard.jsp?popup=addCustomer&error=db_fail");
                 return;
@@ -42,7 +41,7 @@ public class AddCustomerServlet extends HttpServlet {
 
             if (rs.next()) {
                 // customer already exists
-                response.sendRedirect("dashboard.jsp?popup=addCustomer&error=exists");
+                response.sendRedirect(request.getContextPath() + "/dashboard.jsp?popup=addCustomer&error=exists");
                 return;
             }
 
@@ -55,10 +54,11 @@ public class AddCustomerServlet extends HttpServlet {
             ps.setString(3, phone);
             ps.executeUpdate();
 
-            response.sendRedirect("dashboard.jsp?popup=addCustomer&success=1");
+            response.sendRedirect(request.getContextPath() + "/dashboard.jsp?popup=addCustomer&success=1");
 
         } catch (Exception e) {
             e.printStackTrace();
+            response.sendRedirect(request.getContextPath() + "/dashboard.jsp?error=system");
         }
     }
 }

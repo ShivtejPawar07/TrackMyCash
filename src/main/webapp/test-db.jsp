@@ -55,7 +55,7 @@
             </tr>
             <tr>
                 <td>DB_URL</td>
-                <td><%= url != null ? "<code>" + (url.length() > 20 ? url.substring(0, 20) + "..." : url) + "</code>" : "<span style='color:#f87171'>MISSING</span>" %></td>
+                <td><code><%= url != null ? url.replaceAll(":([^/@]+)@", ":****@") : "<span style='color:#f87171'>MISSING</span>" %></code></td>
             </tr>
             <tr>
                 <td>DB_USER</td>

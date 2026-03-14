@@ -22,11 +22,10 @@ public class LoginServlet extends HttpServlet {
         // Logging for Render debug
         System.out.println("[LoginServlet] Attempting login for: " + email);
 
-        try {
-            Connection con = DBConnection.getConnection();
+        try (Connection con = DBConnection.getConnection()) {
             if (con == null) {
                 System.err.println("[LoginServlet] ERROR: Database connection is NULL");
-                response.sendRedirect("login.jsp?msg=Database connection error. Visit <a href='test-db.jsp'>test-db.jsp</a> to debug.");
+                response.sendRedirect(request.getContextPath() + "/login.jsp?msg=Database connection error. Visit <a href='test-db.jsp'>test-db.jsp</a> to debug.");
                 return;
             }
 
@@ -46,18 +45,16 @@ public class LoginServlet extends HttpServlet {
                 if (name == null || name.trim().isEmpty()) name = "User";
                 session.setAttribute("userName", name);
                 
-                System.out.println("[LoginServlet] Login SUCCESS for: " + email + ". Redirecting to dashboard...");
-                
-                // Using a relative redirect is often safer through proxies
-                response.sendRedirect("dashboard.jsp");
+                System.out.println("[LoginServlet] Login SUCCESS for: " + email);
+                response.sendRedirect(request.getContextPath() + "/dashboard.jsp");
             } else {
                 System.out.println("[LoginServlet] Login FAILED for: " + email);
-                response.sendRedirect("login.jsp?msg=Invalid Credentials");
+                response.sendRedirect(request.getContextPath() + "/login.jsp?msg=Invalid Credentials");
             }
         } catch (Exception e) {
             System.err.println("[LoginServlet] EXCEPTION: " + e.getMessage());
             e.printStackTrace();
-            response.sendRedirect("login.jsp?msg=System Error: " + e.getMessage());
+            response.sendRedirect(request.getContextPath() + "/login.jsp?msg=System Error: " + e.getMessage());
         }
     }
 }

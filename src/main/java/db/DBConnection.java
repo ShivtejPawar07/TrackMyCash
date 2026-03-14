@@ -3,86 +3,75 @@ package db;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.Statement;
+import java.util.Properties;
 
 /**
  * Database connection manager for Supabase PostgreSQL.
- * 
- * Reads credentials from .env file via EnvLoader.
- * Automatically creates tables on first connection if they don't exist.
+ * Optimized for cloud environments:
+ * 1. Thread-safe: Returns a fresh connection per request.
+ * 2. Robust URL parsing: Handles postgres:// and postgresql:// formats.
+ * 3. SSL Mandatory: Ensures sslmode=require for Supabase.
  */
 public class DBConnection {
 
-    private static Connection con;
-    private static boolean tablesCreated = false;
-
-    public static Connection getConnection() {
-        try {
-            if (con == null || con.isClosed()) {
-                String driver = EnvLoader.get("DB_DRIVER");
-                String url = EnvLoader.get("DB_URL");
-                String user = EnvLoader.get("DB_USER");
-                String password = EnvLoader.get("DB_PASSWORD");
-
-                if (driver == null || url == null || user == null || password == null) {
-                    String missing = "";
-                    if (driver == null) missing += "DB_DRIVER ";
-                    if (url == null) missing += "DB_URL ";
-                    if (user == null) missing += "DB_USER ";
-                    if (password == null) missing += "DB_PASSWORD ";
-                    
-                    System.err.println("[DBConnection] ERROR: Missing database credentials: " + missing);
-                    return null;
-                }
-
-                // Autocorrect Supabase URL if it's missing the jdbc:postgresql:// prefix
-                if (url.startsWith("postgres://")) {
-                    url = "jdbc:postgresql://" + url.substring(11);
-                    System.out.println("[DBConnection] Autocorrected URL to: " + url);
-                } else if (!url.startsWith("jdbc:postgresql://")) {
-                    // If it's just host:port/db, add the prefix
-                    url = "jdbc:postgresql://" + url;
-                    System.out.println("[DBConnection] Prepended jdbc:postgresql:// to URL");
-                }
-
-                Class.forName(driver);
-                
-                // Use Properties to ensure username/password are handled correctly even with special chars
-                java.util.Properties props = new java.util.Properties();
-                props.setProperty("user", user);
-                props.setProperty("password", password);
-                
-                // Supabase and most cloud DBs require SSL
-                if (!url.contains("sslmode=")) {
-                    props.setProperty("sslmode", "require");
-                }
-
-                con = DriverManager.getConnection(url, props);
-                System.out.println("[DBConnection] Connected to Supabase PostgreSQL successfully as user: " + user);
-
-                // Auto-create tables on first connection
-                if (!tablesCreated) {
-                    createTables(con);
-                    tablesCreated = true;
-                }
-            }
-        } catch (Exception e) {
-            String errorMsg = e.getMessage();
-            System.err.println("[DBConnection] Connection failed for user [" + EnvLoader.get("DB_USER") + "]: " + errorMsg);
-            // Store the last error for UI diagnostics
-            System.setProperty("last_db_error", errorMsg != null ? errorMsg : "Unknown SQL Error");
-            e.printStackTrace();
-        }
-        return con;
-    }
+    private static boolean tablesChecked = false;
 
     /**
-     * Automatically creates the required tables if they don't exist.
-     * This mirrors the original MySQL schema but uses PostgreSQL syntax.
+     * Creates and returns a NEW connection to the database.
+     * The caller is responsible for closing this connection.
      */
-    private static void createTables(Connection conn) {
-        try (Statement stmt = conn.createStatement()) {
+    public static Connection getConnection() {
+        try {
+            String driver = EnvLoader.get("DB_DRIVER");
+            String url = EnvLoader.get("DB_URL");
+            String user = EnvLoader.get("DB_USER");
+            String password = EnvLoader.get("DB_PASSWORD");
 
-            // 1. Users table
+            if (driver == null || url == null || user == null || password == null) {
+                System.err.println("[DBConnection] Error: Missing credentials (DRIVER, URL, USER, or PASSWORD)");
+                return null;
+            }
+
+            // Standardize URL for PostgreSQL JDBC Driver
+            if (url.startsWith("postgres://")) {
+                url = "jdbc:postgresql://" + url.substring(11);
+            } else if (url.startsWith("postgresql://")) {
+                url = "jdbc:postgresql://" + url.substring(13);
+            } else if (!url.startsWith("jdbc:postgresql://")) {
+                url = "jdbc:postgresql://" + url;
+            }
+
+            Class.forName(driver);
+
+            Properties props = new Properties();
+            props.setProperty("user", user);
+            props.setProperty("password", password);
+            
+            // Supabase and most Cloud DBs require SSL
+            if (!url.contains("sslmode=")) {
+                props.setProperty("sslmode", "require");
+            }
+
+            Connection conn = DriverManager.getConnection(url, props);
+            
+            // Perform one-time table check
+            if (!tablesChecked) {
+                checkAndCreateTables(conn);
+            }
+
+            return conn;
+        } catch (Exception e) {
+            String msg = e.getMessage();
+            System.err.println("[DBConnection] Connection Failed: " + msg);
+            System.setProperty("last_db_error", msg != null ? msg : "Unknown SQL Error");
+            return null;
+        }
+    }
+
+    private synchronized static void checkAndCreateTables(Connection conn) {
+        if (tablesChecked) return;
+        try (Statement stmt = conn.createStatement()) {
+            // Users table
             stmt.executeUpdate(
                 "CREATE TABLE IF NOT EXISTS users (" +
                 "  id SERIAL PRIMARY KEY," +
@@ -91,9 +80,7 @@ public class DBConnection {
                 "  password VARCHAR(100)" +
                 ")"
             );
-            System.out.println("[DBConnection] Table 'users' ready.");
-
-            // 2. Customers table
+            // Customers table
             stmt.executeUpdate(
                 "CREATE TABLE IF NOT EXISTS customers (" +
                 "  id SERIAL PRIMARY KEY," +
@@ -102,9 +89,7 @@ public class DBConnection {
                 "  phone VARCHAR(15)" +
                 ")"
             );
-            System.out.println("[DBConnection] Table 'customers' ready.");
-
-            // 3. Transactions table
+            // Transactions table
             stmt.executeUpdate(
                 "CREATE TABLE IF NOT EXISTS transactions (" +
                 "  id SERIAL PRIMARY KEY," +
@@ -115,13 +100,10 @@ public class DBConnection {
                 "  date TIMESTAMP DEFAULT CURRENT_TIMESTAMP" +
                 ")"
             );
-            System.out.println("[DBConnection] Table 'transactions' ready.");
-
-            System.out.println("[DBConnection] All tables created/verified successfully in Supabase!");
-
+            tablesChecked = true;
+            System.out.println("[DBConnection] Schema verified successfully.");
         } catch (Exception e) {
-            System.err.println("[DBConnection] Error creating tables: " + e.getMessage());
-            e.printStackTrace();
+            System.err.println("[DBConnection] Schema check failed: " + e.getMessage());
         }
     }
 }

@@ -21,8 +21,7 @@ public class DeleteCustomerServlet extends HttpServlet {
 
         String cid = request.getParameter("cid");
 
-        try {
-            Connection con = DBConnection.getConnection();
+        try (Connection con = DBConnection.getConnection()) {
             if (con == null) {
                 response.sendRedirect(request.getContextPath() + "/dashboard.jsp?error=db_fail");
                 return;
@@ -34,9 +33,10 @@ public class DeleteCustomerServlet extends HttpServlet {
             ps.setInt(2, userId);
             ps.executeUpdate();
 
-            response.sendRedirect("dashboard.jsp");
+            response.sendRedirect(request.getContextPath() + "/dashboard.jsp");
         } catch (Exception e) {
             e.printStackTrace();
+            response.sendRedirect(request.getContextPath() + "/dashboard.jsp?error=system");
         }
     }
 }
