@@ -19,6 +19,10 @@ public class SignupServlet extends HttpServlet {
 
         try {
             Connection con = DBConnection.getConnection();
+            if (con == null) {
+                response.sendRedirect(request.getContextPath() + "/signup.jsp?msg=Signup Failed: Database connection unavailable. Check environment variables.");
+                return;
+            }
 
             PreparedStatement ps = con.prepareStatement(
                 "INSERT INTO users(name,email,password) VALUES(?,?,?)"
