@@ -5,9 +5,7 @@ import javax.servlet.*;
 import javax.servlet.http.*;
 import java.io.IOException;
 import java.sql.*;
-import javax.servlet.annotation.WebServlet;
 
-@WebServlet("/SignupServlet")
 public class SignupServlet extends HttpServlet {
 
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
@@ -32,11 +30,11 @@ public class SignupServlet extends HttpServlet {
             ps.setString(3, password);
 
             ps.executeUpdate();
-            response.sendRedirect(request.getContextPath() + "/login.jsp?msg=Signup Successful! Please Login.");
+            response.sendRedirect("login.jsp?msg=Signup Successful! Please Login.");
 
         } catch (Exception e) {
             e.printStackTrace();
-            response.sendRedirect(request.getContextPath() + "/signup.jsp?msg=Signup Failed: " + e.getMessage());
+            response.sendRedirect("signup.jsp?msg=Signup Failed: " + e.getMessage());
         }
     }
 }
