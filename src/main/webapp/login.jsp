@@ -10,332 +10,260 @@
     <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <!-- Google Fonts -->
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;700;900&display=swap" rel="stylesheet">
     <style>
         :root {
-            --primary-bg: #0a0f1c;
-            --card-bg: rgba(22, 30, 48, 0.7);
-            --text-main: #f8fafc;
-            --text-muted: #94a3b8;
-            --accent-color: #00f2ff;
-            --accent-glow: rgba(0, 242, 255, 0.5);
-            --gradient-start: #00f2ff;
-            --gradient-end: #0066ff;
+            --bg-deep: #050801;
+            --neon-teal: #03e9f4;
+            --text-white: #ffffff;
+            --glass-bg: rgba(255, 255, 255, 0.05);
         }
 
         body {
-            font-family: 'Inter', sans-serif;
-            background-color: var(--primary-bg);
-            background-image: 
-                radial-gradient(circle at 10% 20%, rgba(0, 102, 255, 0.15) 0%, transparent 40%),
-                radial-gradient(circle at 90% 80%, rgba(0, 242, 255, 0.1) 0%, transparent 40%);
-            color: var(--text-main);
+            margin: 0;
+            padding: 0;
+            font-family: 'Montserrat', sans-serif;
+            background: radial-gradient(#050801, #000000);
             min-height: 100vh;
             display: flex;
             align-items: center;
             justify-content: center;
-            margin: 0;
-            position: relative;
             overflow: hidden;
         }
 
-        /* Ambient floating shapes */
-        .shape {
-            position: absolute;
-            background: linear-gradient(45deg, var(--gradient-start), var(--gradient-end));
-            filter: blur(80px);
-            opacity: 0.3;
-            z-index: -1;
-            border-radius: 50%;
-            animation: float 10s infinite ease-in-out alternate;
-        }
-        .shape-1 { top: -100px; left: -100px; width: 400px; height: 400px; }
-        .shape-2 { bottom: -150px; right: -50px; width: 500px; height: 500px; animation-delay: -5s; }
-
-        @keyframes float {
-            0% { transform: translateY(0) scale(1); }
-            100% { transform: translateY(-30px) scale(1.1); }
-        }
-
-        .auth-wrapper {
+        .auth-container {
+            position: relative;
             width: 100%;
-            max-width: 1000px;
-            padding: 2rem;
+            max-width: 900px;
+            min-height: 500px;
+            background: var(--glass-bg);
+            backdrop-filter: blur(15px);
+            border: 2px solid var(--neon-teal);
+            box-shadow: 0 0 50px rgba(3, 233, 244, 0.3);
+            border-radius: 10px;
             display: flex;
-            align-items: center;
-            justify-content: center;
-            z-index: 10;
-        }
-
-        /* Glassmorphism Card */
-        .auth-card {
-            background: var(--card-bg);
-            backdrop-filter: blur(20px);
-            -webkit-backdrop-filter: blur(20px);
-            border: 1px solid rgba(255, 255, 255, 0.08);
-            border-radius: 24px;
-            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5), 0 0 20px rgba(0, 242, 255, 0.1);
             overflow: hidden;
-            display: flex;
-            flex-direction: row;
-            width: 100%;
-            transform: translateY(0);
-            transition: all 0.4s ease;
+            margin: 20px;
         }
 
-        .auth-card:hover {
-            box-shadow: 0 30px 60px -15px rgba(0, 0, 0, 0.6), 0 0 30px rgba(0, 242, 255, 0.15);
-            transform: translateY(-5px);
-        }
-
-        /* Form Side */
-        .auth-form-side {
-            padding: 3.5rem;
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-        }
-
-        /* Image/Branding Side */
-        .auth-image-side {
-            flex: 1;
-            background: linear-gradient(135deg, rgba(0, 102, 255, 0.8), rgba(0, 242, 255, 0.8)), url('https://images.unsplash.com/photo-1551288049-bebda4e38f71?q=80&w=1470&auto=format&fit=crop') center/cover;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            padding: 3rem;
-            text-align: center;
-            position: relative;
-        }
-        
-        .auth-image-side::before {
-            content: '';
-            position: absolute;
-            inset: 0;
-            background: rgba(10, 15, 28, 0.3);
-        }
-
-        .auth-image-content {
-            position: relative;
-            z-index: 1;
-        }
-
-        .brand-logo {
-            font-size: 3rem;
-            font-weight: 700;
-            background: linear-gradient(90deg, #fff, #e0e7ff);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            margin-bottom: 1rem;
-        }
-
-        .brand-tagline {
-            font-size: 1.1rem;
-            color: rgba(255, 255, 255, 0.9);
-            font-weight: 300;
-        }
-
-        .auth-title {
-            font-size: 2rem;
-            font-weight: 700;
-            margin-bottom: 0.5rem;
-            color: #fff;
-        }
-
-        .auth-subtitle {
-            color: var(--text-muted);
-            margin-bottom: 2.5rem;
-            font-size: 0.95rem;
-        }
-
-        /* Custom Input Styling */
-        .form-floating > .form-control {
-            background-color: rgba(255, 255, 255, 0.03);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            color: #fff;
-            border-radius: 12px;
-            padding-left: 3rem;
-            height: 3.5rem;
-            transition: all 0.3s ease;
-        }
-
-        .form-floating > .form-control:focus {
-            background-color: rgba(255, 255, 255, 0.06);
-            border-color: var(--accent-color);
-            box-shadow: 0 0 0 4px rgba(0, 242, 255, 0.1);
-        }
-
-        .form-floating > label {
-            color: var(--text-muted);
-            padding-left: 3rem;
-        }
-
-        .form-floating > .form-control:focus ~ label,
-        .form-floating > .form-control:not(:placeholder-shown) ~ label {
-            color: var(--accent-color);
-            transform: scale(0.85) translateY(-0.75rem) translateX(0.5rem);
-        }
-
-        .input-icon {
-            position: absolute;
-            left: 1rem;
-            top: 50%;
-            transform: translateY(-50%);
-            color: var(--text-muted);
-            z-index: 4;
-            transition: color 0.3s ease;
-        }
-
-        .form-floating > .form-control:focus ~ .input-icon {
-            color: var(--accent-color);
-        }
-
-        /* Stylish Button */
-        .btn-auth {
-            background: linear-gradient(90deg, var(--gradient-start), var(--gradient-end));
-            color: #fff;
-            border: none;
-            border-radius: 12px;
-            padding: 0.8rem 1.5rem;
-            font-size: 1.1rem;
-            font-weight: 600;
-            width: 100%;
-            height: 3.5rem;
-            transition: all 0.3s ease;
-            position: relative;
-            overflow: hidden;
-            z-index: 1;
-        }
-
-        .btn-auth::before {
+        /* Ambient Glow effect on border */
+        .auth-container::before {
             content: '';
             position: absolute;
             top: 0; left: 0; width: 100%; height: 100%;
-            background: linear-gradient(90deg, var(--gradient-end), var(--gradient-start));
-            opacity: 0;
-            z-index: -1;
-            transition: opacity 0.3s ease;
+            border: 1px solid var(--neon-teal);
+            box-shadow: inset 0 0 15px rgba(3, 233, 244, 0.5);
+            pointer-events: none;
+            z-index: 10;
         }
 
-        .btn-auth:hover {
+        .auth-form-side {
+            flex: 1.2;
+            padding: 60px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            z-index: 5;
+        }
+
+        .auth-welcome-side {
+            flex: 0.8;
+            background: linear-gradient(135deg, rgba(3, 233, 244, 0.1), transparent);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 40px;
+            border-left: 1px solid rgba(3, 233, 244, 0.2);
+            z-index: 5;
+        }
+
+        .welcome-text {
+            color: var(--neon-teal);
+            font-size: 3.5rem;
+            font-weight: 900;
+            line-height: 1.1;
+            text-transform: uppercase;
+            letter-spacing: 5px;
+            opacity: 0.8;
+            user-select: none;
+            text-shadow: 0 0 10px rgba(3, 233, 244, 0.5);
+        }
+
+        .login-box h2 {
+            margin: 0 0 40px;
+            padding: 0;
+            color: var(--text-white);
+            font-size: 2.2rem;
+            font-weight: 700;
+        }
+
+        .user-box {
+            position: relative;
+            margin-bottom: 30px;
+        }
+
+        .user-box input {
+            width: 100%;
+            padding: 10px 0;
+            font-size: 16px;
             color: #fff;
-            transform: translateY(-2px);
-            box-shadow: 0 10px 20px -10px var(--accent-glow);
+            margin-bottom: 30px;
+            border: none;
+            border-bottom: 1px solid #fff;
+            outline: none;
+            background: transparent;
+            transition: 0.5s;
         }
 
-        .btn-auth:hover::before {
-            opacity: 1;
+        .user-box label {
+            position: absolute;
+            top: 0;
+            left: 0;
+            padding: 10px 0;
+            font-size: 16px;
+            color: #fff;
+            pointer-events: none;
+            transition: 0.5s;
         }
 
-        .auth-footer {
-            margin-top: 2rem;
-            text-align: center;
-            color: var(--text-muted);
+        .user-box input:focus ~ label,
+        .user-box input:valid ~ label {
+            top: -20px;
+            left: 0;
+            color: var(--neon-teal);
+            font-size: 12px;
         }
 
-        .auth-link {
-            color: var(--accent-color);
+        .user-box input:focus {
+            border-bottom: 1px solid var(--neon-teal);
+            box-shadow: 0 1px 0 0 var(--neon-teal);
+        }
+
+        .user-box i {
+            position: absolute;
+            right: 0;
+            top: 10px;
+            color: rgba(255, 255, 255, 0.5);
+            font-size: 1.1rem;
+        }
+
+        /* Neon Button */
+        .neon-btn {
+            position: relative;
+            display: inline-block;
+            padding: 15px 30px;
+            color: var(--neon-teal);
+            font-size: 16px;
             text-decoration: none;
-            font-weight: 500;
-            transition: color 0.3s ease;
+            text-transform: uppercase;
+            overflow: hidden;
+            transition: 0.5s;
+            margin-top: 20px;
+            letter-spacing: 4px;
+            background: transparent;
+            border: 1px solid var(--neon-teal);
+            cursor: pointer;
+            width: 100%;
+            font-weight: 700;
+            border-radius: 5px;
         }
 
-        .auth-link:hover {
+        .neon-btn:hover {
+            background: var(--neon-teal);
             color: #fff;
+            border-radius: 5px;
+            box-shadow: 0 0 5px var(--neon-teal),
+                        0 0 25px var(--neon-teal),
+                        0 0 50px var(--neon-teal),
+                        0 0 100px var(--neon-teal);
+        }
+
+        .signup-link {
+            margin-top: 30px;
+            text-align: center;
+            color: #fff;
+            font-size: 0.9rem;
+            opacity: 0.7;
+        }
+
+        .signup-link a {
+            color: var(--neon-teal);
+            text-decoration: none;
+            font-weight: 700;
+        }
+
+        .signup-link a:hover {
             text-decoration: underline;
         }
 
         .alert-error {
-            background: rgba(255, 77, 109, 0.1);
-            border-left: 4px solid #ff4d6d;
-            color: #ffb3c1;
-            padding: 1rem;
-            border-radius: 8px;
-            margin-bottom: 1.5rem;
-            font-size: 0.9rem;
-            display: flex;
-            align-items: center;
-            gap: 10px;
+            background: rgba(255, 0, 0, 0.1);
+            border: 1px solid #ff0000;
+            color: #ff0000;
+            padding: 10px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+            font-size: 0.85rem;
+            text-align: center;
         }
 
-        /* Mobile Responsiveness */
-        @media (max-width: 991px) {
-            .auth-card {
-                flex-direction: column-reverse;
-                max-width: 500px;
+        @media (max-width: 768px) {
+            .auth-welcome-side {
+                display: none;
             }
-            .auth-image-side {
-                padding: 2rem;
-                min-height: 200px;
+            .auth-container {
+                max-width: 450px;
             }
             .auth-form-side {
-                padding: 2.5rem 2rem;
+                padding: 40px;
             }
         }
     </style>
 </head>
 <body>
 
-    <div class="shape shape-1"></div>
-    <div class="shape shape-2"></div>
+    <div class="auth-container">
+        <!-- Main Form Side -->
+        <div class="auth-form-side">
+            <div class="login-box">
+                <h2>Login</h2>
 
-    <div class="auth-wrapper">
-        <div class="auth-card">
-            
-            <div class="auth-form-side">
-                <div>
-                    <h2 class="auth-title">Welcome Back</h2>
-                    <p class="auth-subtitle">Sign in to track your cash flow</p>
-
-                    <% if(request.getParameter("msg")!=null){ %>
-                        <div class="alert-error">
-                            <i class="fa-solid fa-circle-exclamation"></i>
-                            <span><%= request.getParameter("msg") %></span>
-                        </div>
-                    <% } %>
-
-                    <form action="LoginServlet" method="post">
-                        <!-- Changed back to standard form-control relative design to support icon correctly inside form-floating -->
-                        <!-- Actually, form-floating puts the label on top of everything if not careful. The input-icon needs to be aligned. -->
-                        <div class="position-relative mb-4">
-                            <i class="fa-solid fa-envelope input-icon"></i>
-                            <div class="form-floating">
-                                <input type="email" class="form-control" id="email" name="email" placeholder="name@example.com" required>
-                                <label for="email">Email Address</label>
-                            </div>
-                        </div>
-
-                        <div class="position-relative mb-4">
-                            <i class="fa-solid fa-lock input-icon"></i>
-                            <div class="form-floating">
-                                <input type="password" class="form-control" id="password" name="password" placeholder="Password" required>
-                                <label for="password">Password</label>
-                            </div>
-                        </div>
-
-                        <button type="submit" class="btn btn-auth mt-2">
-                            Sign In <i class="fa-solid fa-arrow-right ms-2"></i>
-                        </button>
-                    </form>
-
-                    <div class="auth-footer">
-                        <p class="mb-0">Don't have an account? <a href="signup.jsp" class="auth-link">Create one</a></p>
+                <% if(request.getParameter("msg")!=null){ %>
+                    <div class="alert-error">
+                        <i class="fa-solid fa-triangle-exclamation me-2"></i>
+                        <%= request.getParameter("msg") %>
                     </div>
+                <% } %>
+
+                <form action="LoginServlet" method="post">
+                    <div class="user-box">
+                        <input type="text" name="email" required="">
+                        <label>Username</label>
+                        <i class="fa-solid fa-user"></i>
+                    </div>
+                    <div class="user-box">
+                        <input type="password" name="password" required="">
+                        <label>Password</label>
+                        <i class="fa-solid fa-lock"></i>
+                    </div>
+                    
+                    <button type="submit" class="neon-btn">
+                        Login
+                    </button>
+                </form>
+
+                <div class="signup-link">
+                    Don't have an account? <br>
+                    <a href="signup.jsp">Sign Up</a>
                 </div>
             </div>
+        </div>
 
-            <div class="auth-image-side">
-                <div class="auth-image-content">
-                    <div class="brand-logo">
-                        <i class="fa-solid fa-wallet text-white mb-2"></i><br>
-                        TrackMyCash
-                    </div>
-                    <p class="brand-tagline">Master your finances with our beautifully designed tracking dashboard.</p>
-                </div>
+        <!-- Welcome Text Side -->
+        <div class="auth-welcome-side">
+            <div class="welcome-text">
+                Welcome<br>Back!
             </div>
-
         </div>
     </div>
 
