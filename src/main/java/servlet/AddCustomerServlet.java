@@ -25,6 +25,10 @@ public class AddCustomerServlet extends HttpServlet {
 
         try {
             Connection con = DBConnection.getConnection();
+            if (con == null) {
+                response.sendRedirect(request.getContextPath() + "/dashboard.jsp?popup=addCustomer&error=db_fail");
+                return;
+            }
 
             /* CASE-INSENSITIVE CHECK */
             PreparedStatement check = con.prepareStatement(
