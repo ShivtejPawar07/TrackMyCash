@@ -9,6 +9,12 @@ COPY src ./src
 # Build the WAR file (named ROOT.war based on pom.xml <finalName>)
 # We use -DskipTests to ensure tests don't interrupt the build in headless environments
 RUN mvn clean package -DskipTests -v
+RUN echo "=== MAVEN BUILD FINISHED ==="
+RUN ls -la
+RUN echo "=== CONTENTS OF TARGET FOLDER (if exists) ==="
+RUN ls -la target || echo "TARGET FOLDER DOES NOT EXIST"
+RUN echo "=== FINDING ALL WAR FILES ==="
+RUN find . -name "*.war"
 
 # Stage 2: Create the final lightweight Tomcat image
 FROM tomcat:9.0-jdk17-corretto
