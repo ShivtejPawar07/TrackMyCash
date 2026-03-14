@@ -3,7 +3,6 @@ package db;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.Statement;
-import java.util.Properties;
 
 /**
  * Database connection manager for Supabase PostgreSQL.
@@ -43,26 +42,31 @@ public class DBConnection {
 
             Class.forName(driver);
 
-            Properties props = new Properties();
-            props.setProperty("user", user);
-            props.setProperty("password", password);
-            
-            // Supabase and most Cloud DBs require SSL
-            if (!url.contains("sslmode=")) {
-                props.setProperty("sslmode", "require");
+            // Supabase and cloud DBs often require SSL
+            String connectionUrl = url;
+            if (!connectionUrl.contains("sslmode=")) {
+                if (connectionUrl.contains("?")) {
+                    connectionUrl += "&sslmode=require";
+                } else {
+                    connectionUrl += "?sslmode=require";
+                }
             }
 
-            Connection conn = DriverManager.getConnection(url, props);
+            // Sanitization: If the URL contains credentials (user:pass@), the driver might 
+            // prioritize them. We want to ENSURE the provided 'user' variable is used.
+            // Using the 3-arg getConnection is generally more reliable for this.
+            Connection conn = DriverManager.getConnection(connectionUrl, user, password);
             
             // Perform one-time table check
             if (!tablesChecked) {
                 checkAndCreateTables(conn);
             }
 
+            System.out.println("[DBConnection] Connected to Supabase successfully as user: " + user);
             return conn;
         } catch (Exception e) {
             String msg = e.getMessage();
-            System.err.println("[DBConnection] Connection Failed: " + msg);
+            System.err.println("[DBConnection] Connection Failed for user [" + EnvLoader.get("DB_USER") + "]: " + msg);
             System.setProperty("last_db_error", msg != null ? msg : "Unknown SQL Error");
             return null;
         }
