@@ -18,7 +18,7 @@ public class SignupServlet extends HttpServlet {
         try {
             Connection con = DBConnection.getConnection();
             if (con == null) {
-                response.sendRedirect(request.getContextPath() + "/signup.jsp?msg=Signup Failed: Database connection unavailable. Check environment variables.");
+                response.sendRedirect(request.getContextPath() + "/signup.jsp?msg=Signup Failed: Database connection unavailable. Visit <a href='test-db.jsp'>test-db.jsp</a> to check your Render environment variables.");
                 return;
             }
 

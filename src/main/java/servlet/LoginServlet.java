@@ -26,7 +26,7 @@ public class LoginServlet extends HttpServlet {
             Connection con = DBConnection.getConnection();
             if (con == null) {
                 System.err.println("[LoginServlet] ERROR: Database connection is NULL");
-                response.sendRedirect("login.jsp?msg=Database connection error. Check Render log.");
+                response.sendRedirect("login.jsp?msg=Database connection error. Visit <a href='test-db.jsp'>test-db.jsp</a> to debug.");
                 return;
             }
 

@@ -195,10 +195,7 @@
         </div>
 
         <div class="p-4">
-            <% if (dbError != null) { %>
-                <div class="alert alert-danger shadow-sm border-0" style="border-radius: 12px; background: rgba(239, 68, 68, 0.1); color: #fecaca;">
-                    <h5 class="fw-bold"><i class="fa-solid fa-triangle-exclamation me-2"></i>Database Connection Issue</h5>
-                    <p class="mb-0">Please check your Render Environment Variables. Error: <code><%= dbError %></code></p>
+                    <p class="mb-0">Please check your Render Environment Variables. Error: <code><%= dbError %></code>. <br>Visit <a href="test-db.jsp" class="text-white fw-bold">test-db.jsp</a> for full diagnostics.</p>
                 </div>
             <% } %>
 

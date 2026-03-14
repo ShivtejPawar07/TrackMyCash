@@ -24,12 +24,24 @@ public class DBConnection {
                 String password = EnvLoader.get("DB_PASSWORD");
 
                 if (driver == null || url == null || user == null || password == null) {
-                    System.err.println("[DBConnection] ERROR: Missing database credentials in .env file!");
-                    System.err.println("  DB_DRIVER=" + driver);
-                    System.err.println("  DB_URL=" + url);
-                    System.err.println("  DB_USER=" + user);
-                    System.err.println("  DB_PASSWORD=" + (password != null ? "****" : "null"));
+                    String missing = "";
+                    if (driver == null) missing += "DB_DRIVER ";
+                    if (url == null) missing += "DB_URL ";
+                    if (user == null) missing += "DB_USER ";
+                    if (password == null) missing += "DB_PASSWORD ";
+                    
+                    System.err.println("[DBConnection] ERROR: Missing database credentials: " + missing);
                     return null;
+                }
+
+                // Autocorrect Supabase URL if it's missing the jdbc:postgresql:// prefix
+                if (url.startsWith("postgres://")) {
+                    url = "jdbc:postgresql://" + url.substring(11);
+                    System.out.println("[DBConnection] Autocorrected URL to: " + url);
+                } else if (!url.startsWith("jdbc:postgresql://")) {
+                    // If it's just host:port/db, add the prefix
+                    url = "jdbc:postgresql://" + url;
+                    System.out.println("[DBConnection] Prepended jdbc:postgresql:// to URL");
                 }
 
                 Class.forName(driver);
@@ -43,7 +55,10 @@ public class DBConnection {
                 }
             }
         } catch (Exception e) {
-            System.err.println("[DBConnection] Connection failed: " + e.getMessage());
+            String errorMsg = e.getMessage();
+            System.err.println("[DBConnection] Connection failed: " + errorMsg);
+            // Store the last error for UI diagnostics
+            System.setProperty("last_db_error", errorMsg != null ? errorMsg : "Unknown SQL Error");
             e.printStackTrace();
         }
         return con;
