@@ -17,8 +17,8 @@ WORKDIR /usr/local/tomcat
 RUN rm -rf webapps/* 
 
 # Copy our compiled ROOT.war from the build stage into Tomcat's webapps directory 
-# so it is served at the root URL (/)
-COPY --from=build /app/target/ROOT.war webapps/ROOT.war
+# We use a wildcard *.war and rename to ROOT.war to ensure it works even if maven names it slightly differently
+COPY --from=build /app/target/*.war webapps/ROOT.war
 
 # Expose port 8080 default
 EXPOSE 8080
