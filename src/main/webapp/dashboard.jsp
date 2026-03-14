@@ -194,9 +194,12 @@
             </div>
         </div>
 
-        <div class="p-4">
+            <% if (dbError != null) { %>
+            <div class="alert alert-danger bg-danger text-white border-0 m-4 shadow-sm" style="border-radius:12px;">
+                <div class="p-4">
                     <p class="mb-0">Please check your Render Environment Variables. Error: <code><%= dbError %></code>. <br>Visit <a href="test-db.jsp" class="text-white fw-bold">test-db.jsp</a> for full diagnostics.</p>
                 </div>
+            </div>
             <% } %>
 
             <%
