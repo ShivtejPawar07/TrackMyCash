@@ -8,7 +8,8 @@ COPY src ./src
 
 # Build the WAR file (named ROOT.war based on pom.xml <finalName>)
 # We use -DskipTests to ensure tests don't interrupt the build in headless environments
-RUN mvn clean package -DskipTests -v
+# We use -B for batch mode to make logs cleaner
+RUN mvn clean package -DskipTests -B
 RUN echo "=== MAVEN BUILD FINISHED ==="
 RUN ls -la
 RUN echo "=== CONTENTS OF TARGET FOLDER (if exists) ==="
