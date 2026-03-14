@@ -24,7 +24,7 @@ public class AddTransactionServlet extends HttpServlet {
         String type = request.getParameter("type"); // gave / got
 
         if (cid == null || amountStr == null || type == null) {
-            response.sendRedirect("dashboard.jsp");
+            response.sendRedirect(request.getContextPath() + "/dashboard.jsp");
             return;
         }
 
