@@ -4,438 +4,351 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Track My Cash - Secure Registration</title>
+    <title>Track My Cash - Create Account</title>
     <!-- Bootstrap 5 CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <!-- Google Fonts -->
-    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Rajdhani:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <style>
         :root {
-            --bg-dark: #020617;
-            --accent-cyan: #06b6d4;
-            --accent-purple: #8b5cf6;
-            --text-primary: #f8fafc;
-            --text-secondary: #94a3b8;
-            --glass-bg: rgba(15, 23, 42, 0.75);
-            --glass-border: rgba(255, 255, 255, 0.1);
-        }
-
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
+            --primary-bg: #0a0f1c;
+            --card-bg: rgba(22, 30, 48, 0.7);
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --accent-color: #00f2ff;
+            --accent-glow: rgba(0, 242, 255, 0.5);
+            --gradient-start: #00f2ff;
+            --gradient-end: #0066ff;
         }
 
         body {
-            font-family: 'Rajdhani', sans-serif;
-            background: radial-gradient(circle at center, #0f172a, #020617);
-            color: var(--text-primary);
+            font-family: 'Inter', sans-serif;
+            background-color: var(--primary-bg);
+            background-image: 
+                radial-gradient(circle at 10% 20%, rgba(0, 102, 255, 0.15) 0%, transparent 40%),
+                radial-gradient(circle at 90% 80%, rgba(0, 242, 255, 0.1) 0%, transparent 40%);
+            color: var(--text-main);
             min-height: 100vh;
             display: flex;
             align-items: center;
             justify-content: center;
-            overflow: hidden;
-            perspective: 1500px;
+            margin: 0;
             position: relative;
+            overflow: hidden;
         }
 
-        /* Animated Background Elements */
-        .bg-glow {
+        /* Ambient floating shapes */
+        .shape {
             position: absolute;
-            width: 600px;
-            height: 600px;
-            border-radius: 50%;
+            background: linear-gradient(45deg, var(--gradient-start), var(--gradient-end));
+            filter: blur(80px);
+            opacity: 0.3;
             z-index: -1;
-            filter: blur(120px);
-            opacity: 0.4;
-            animation: pulse-glow 15s infinite alternate ease-in-out;
+            border-radius: 50%;
+            animation: float 10s infinite ease-in-out alternate;
         }
-
-        @keyframes pulse-glow {
-            0% { transform: translate(-20%, -20%) scale(1); opacity: 0.3; }
-            100% { transform: translate(20%, 20%) scale(1.3); opacity: 0.6; }
-        }
+        .shape-1 { top: -100px; left: -100px; width: 400px; height: 400px; }
+        .shape-2 { bottom: -150px; right: -50px; width: 500px; height: 500px; animation-delay: -5s; }
 
         @keyframes float {
-            0% { transform: translateY(0px) rotateX(0deg) rotateY(0deg); }
-            50% { transform: translateY(-20px) rotateX(1deg) rotateY(-1deg); }
-            100% { transform: translateY(0px) rotateX(0deg) rotateY(0deg); }
+            0% { transform: translateY(0) scale(1); }
+            100% { transform: translateY(-30px) scale(1.1); }
         }
 
         .auth-wrapper {
             width: 100%;
-            max-width: 1050px;
-            padding: 20px;
-            animation: float 6s infinite ease-in-out;
-            transform-style: preserve-3d;
-        }
-
-        .auth-container {
-            position: relative;
-            width: 100%;
-            min-height: 650px;
+            max-width: 1000px;
+            padding: 2rem;
             display: flex;
-            background: var(--glass-bg);
-            backdrop-filter: blur(35px);
-            border-radius: 40px;
-            border: 1px solid var(--glass-border);
-            box-shadow: 0 50px 120px -20px rgba(0, 0, 0, 0.85);
+            align-items: center;
+            justify-content: center;
+            z-index: 10;
+        }
+
+        /* Glassmorphism Card */
+        .auth-card {
+            background: var(--card-bg);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 24px;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5), 0 0 20px rgba(0, 242, 255, 0.1);
             overflow: hidden;
-            transition: transform 0.15s ease-out;
-            transform-style: preserve-3d;
+            display: flex;
+            flex-direction: row;
+            width: 100%;
+            transform: translateY(0);
+            transition: all 0.4s ease;
         }
 
-        /* Neon Border Animation */
-        .neon-border {
-            position: absolute;
-            inset: -4px;
-            background: conic-gradient(from 0deg, 
-                transparent, var(--accent-cyan), 
-                transparent, var(--accent-purple), 
-                transparent, var(--accent-cyan));
-            border-radius: 42px;
-            z-index: -1;
-            animation: rotate-gradient 3s linear infinite;
-            opacity: 0.9;
+        .auth-card:hover {
+            box-shadow: 0 30px 60px -15px rgba(0, 0, 0, 0.6), 0 0 30px rgba(0, 242, 255, 0.15);
+            transform: translateY(-5px);
         }
 
-        @keyframes rotate-gradient {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
-
-        /* Panes: Strict 50/50 Split */
+        /* Form Side */
         .auth-form-side {
+            padding: 3.5rem;
             flex: 1;
-            padding: 60px 70px;
             display: flex;
             flex-direction: column;
             justify-content: center;
-            background: rgba(15, 23, 42, 0.45);
-            transform: translateZ(40px);
         }
 
-        .auth-welcome-side {
+        /* Image/Branding Side */
+        .auth-image-side {
             flex: 1;
-            padding: 80px;
+            background: linear-gradient(135deg, rgba(0, 102, 255, 0.8), rgba(0, 242, 255, 0.8)), url('https://images.unsplash.com/photo-1551288049-bebda4e38f71?q=80&w=1470&auto=format&fit=crop') center/cover;
             display: flex;
             flex-direction: column;
             justify-content: center;
             align-items: center;
-            background: linear-gradient(135deg, rgba(6, 182, 212, 0.25), rgba(139, 92, 246, 0.25));
-            border-left: 1px solid var(--glass-border);
-            position: relative;
-            overflow: hidden;
-            transform: translateZ(60px);
-        }
-
-        .welcome-content {
+            padding: 3rem;
             text-align: center;
-            z-index: 2;
-        }
-
-        .welcome-title {
-            font-family: 'Orbitron', sans-serif;
-            font-size: 4.5rem;
-            font-weight: 950;
-            background: linear-gradient(to bottom, #fff, var(--accent-purple));
-            -webkit-background-clip: text;
-            background-clip: text;
-            -webkit-text-fill-color: transparent;
-            margin-bottom: 35px;
-            line-height: 0.9;
-            text-transform: uppercase;
-            letter-spacing: 12px;
-            filter: drop-shadow(0 0 20px rgba(139, 92, 246, 0.6));
-        }
-
-        .welcome-subtitle {
-            font-size: 1.3rem;
-            color: #fff;
-            max-width: 300px;
-            margin: 0 auto;
-            letter-spacing: 4px;
-            font-weight: 600;
-            text-transform: uppercase;
-            opacity: 0.9;
-            border-top: 1px solid rgba(255,255,255,0.2);
-            padding-top: 20px;
-        }
-
-        .login-box h2 {
-            font-family: 'Orbitron', sans-serif;
-            margin-bottom: 40px;
-            font-size: 3rem;
-            font-weight: 900;
-            letter-spacing: 5px;
-            color: #fff;
             position: relative;
         }
-
-        .login-box h2::after {
+        
+        .auth-image-side::before {
             content: '';
             position: absolute;
-            left: 0;
-            bottom: -15px;
-            width: 60px;
-            height: 4px;
-            background: var(--accent-purple);
-            box-shadow: 0 0 15px var(--accent-purple);
+            inset: 0;
+            background: rgba(10, 15, 28, 0.3);
         }
 
-        /* Underline Style Fields */
-        .input-group-custom {
-            position: relative;
-            margin-bottom: 40px;
-        }
-
-        .input-group-custom input {
-            width: 100%;
-            padding: 12px 0 12px 45px;
-            background: transparent;
-            border: none;
-            border-bottom: 2px solid var(--glass-border);
-            color: var(--text-primary);
-            font-size: 1.2rem;
-            outline: none;
-            transition: all 0.4s;
-            border-radius: 0;
-        }
-
-        .input-group-custom .underline-bar {
-            position: absolute;
-            bottom: 0px;
-            left: 50%;
-            width: 0;
-            height: 2px;
-            background: var(--accent-purple);
-            transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
-            box-shadow: 0 0 15px var(--accent-purple);
-        }
-
-        .input-group-custom input:focus ~ .underline-bar {
-            width: 100%;
-            left: 0;
-        }
-
-        .input-group-custom i {
-            position: absolute;
-            left: 0;
-            top: 50%;
-            transform: translateY(-50%);
-            color: var(--accent-purple);
-            font-size: 1.4rem;
-            transition: all 0.3s ease;
-            opacity: 0.8;
-        }
-
-        .input-group-custom label {
-            position: absolute;
-            left: 45px;
-            top: 50%;
-            transform: translateY(-50%);
-            color: var(--text-secondary);
-            font-size: 1.1rem;
-            pointer-events: none;
-            transition: all 0.3s ease;
-        }
-
-        .input-group-custom input:focus ~ label,
-        .input-group-custom input:valid ~ label {
-            top: -20px;
-            left: 0;
-            font-size: 0.9rem;
-            color: var(--accent-purple);
-            font-weight: 800;
-            letter-spacing: 2px;
-            text-transform: uppercase;
-        }
-
-        /* Glowing Button */
-        .btn-neon {
-            width: 100%;
-            padding: 22px;
-            margin-top: 15px;
-            background: var(--accent-purple);
-            border: none;
-            color: #020617;
-            font-family: 'Orbitron', sans-serif;
-            font-size: 1.4rem;
-            font-weight: 950;
-            text-transform: uppercase;
-            border-radius: 60px;
-            cursor: pointer;
-            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-            letter-spacing: 5px;
-            box-shadow: 0 15px 35px rgba(139, 92, 246, 0.4);
+        .auth-image-content {
             position: relative;
             z-index: 1;
         }
 
-        .btn-neon:hover {
-            transform: translateY(-6px) scale(1.04);
-            background: #fff;
-            box-shadow: 0 25px 50px rgba(255, 255, 255, 0.5), 0 0 80px var(--accent-purple);
+        .brand-logo {
+            font-size: 3rem;
+            font-weight: 700;
+            background: linear-gradient(90deg, #fff, #e0e7ff);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 1rem;
         }
 
-        .signup-link {
-            margin-top: 50px;
-            text-align: center;
-            color: var(--text-secondary);
-            font-size: 1.15rem;
-            letter-spacing: 1.5px;
+        .brand-tagline {
+            font-size: 1.1rem;
+            color: rgba(255, 255, 255, 0.9);
+            font-weight: 300;
         }
 
-        .signup-link a {
-            color: var(--accent-purple);
-            text-decoration: none;
-            font-weight: 800;
-            margin-left: 8px;
-            transition: all 0.4s;
-            position: relative;
+        .auth-title {
+            font-size: 2rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+            color: #fff;
         }
 
-        .signup-link a:hover { color: #fff; text-shadow: 0 0 15px var(--accent-purple); }
-
-        @media (max-width: 991px) {
-            body { perspective: none; overflow-y: auto; }
-            .auth-wrapper { animation: none; padding: 25px; }
-            .auth-container { flex-direction: column; min-height: auto; }
-            .auth-welcome-side { display: none; }
-            .auth-form-side { padding: 70px 50px; transform: none; }
-            .neon-border { inset: -2px; border-radius: 27px; }
-            .auth-container { border-radius: 25px; }
+        .auth-subtitle {
+            color: var(--text-muted);
+            margin-bottom: 2.5rem;
+            font-size: 0.95rem;
         }
 
-        .particle {
+        /* Custom Input Styling */
+        .form-floating > .form-control {
+            background-color: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: #fff;
+            border-radius: 12px;
+            padding-left: 3rem;
+            height: 3.5rem;
+            transition: all 0.3s ease;
+        }
+
+        .form-floating > .form-control:focus {
+            background-color: rgba(255, 255, 255, 0.06);
+            border-color: var(--accent-color);
+            box-shadow: 0 0 0 4px rgba(0, 242, 255, 0.1);
+        }
+
+        .form-floating > label {
+            color: var(--text-muted);
+            padding-left: 3rem;
+        }
+
+        .form-floating > .form-control:focus ~ label,
+        .form-floating > .form-control:not(:placeholder-shown) ~ label {
+            color: var(--accent-color);
+            transform: scale(0.85) translateY(-0.75rem) translateX(0.5rem);
+        }
+
+        .input-icon {
             position: absolute;
-            background: #fff;
-            border-radius: 50%;
-            pointer-events: none;
+            left: 1rem;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--text-muted);
+            z-index: 4;
+            transition: color 0.3s ease;
+        }
+
+        .form-floating > .form-control:focus ~ .input-icon {
+            color: var(--accent-color);
+        }
+
+        /* Stylish Button */
+        .btn-auth {
+            background: linear-gradient(90deg, var(--gradient-start), var(--gradient-end));
+            color: #fff;
+            border: none;
+            border-radius: 12px;
+            padding: 0.8rem 1.5rem;
+            font-size: 1.1rem;
+            font-weight: 600;
+            width: 100%;
+            height: 3.5rem;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+            z-index: 1;
+        }
+
+        .btn-auth::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: linear-gradient(90deg, var(--gradient-end), var(--gradient-start));
+            opacity: 0;
             z-index: -1;
-            box-shadow: 0 0 12px var(--accent-purple);
+            transition: opacity 0.3s ease;
+        }
+
+        .btn-auth:hover {
+            color: #fff;
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px -10px var(--accent-glow);
+        }
+
+        .btn-auth:hover::before {
+            opacity: 1;
+        }
+
+        .auth-footer {
+            margin-top: 2rem;
+            text-align: center;
+            color: var(--text-muted);
+        }
+
+        .auth-link {
+            color: var(--accent-color);
+            text-decoration: none;
+            font-weight: 500;
+            transition: color 0.3s ease;
+        }
+
+        .auth-link:hover {
+            color: #fff;
+            text-decoration: underline;
+        }
+
+        .alert-error {
+            background: rgba(255, 77, 109, 0.1);
+            border-left: 4px solid #ff4d6d;
+            color: #ffb3c1;
+            padding: 1rem;
+            border-radius: 8px;
+            margin-bottom: 1.5rem;
+            font-size: 0.9rem;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        /* Mobile Responsiveness */
+        @media (max-width: 991px) {
+            .auth-card {
+                flex-direction: column-reverse;
+                max-width: 500px;
+            }
+            .auth-image-side {
+                padding: 2rem;
+                min-height: 200px;
+            }
+            .auth-form-side {
+                padding: 2.5rem 2rem;
+            }
         }
     </style>
 </head>
 <body>
 
-    <div class="bg-glow" style="top: -100px; right: -100px; background: radial-gradient(circle, var(--accent-purple) 0%, transparent 70%);"></div>
-    <div class="bg-glow" style="bottom: -100px; left: -100px; background: radial-gradient(circle, var(--accent-cyan) 0%, transparent 70%); animation-delay: -7s;"></div>
+    <div class="shape shape-1"></div>
+    <div class="shape shape-2"></div>
 
     <div class="auth-wrapper">
-        <div class="auth-container" id="tilt-card">
-            <div class="neon-border"></div>
+        <div class="auth-card">
             
-            <!-- Side A: Registration UI -->
             <div class="auth-form-side">
-                <div class="login-box">
-                    <h2>CREATE ID</h2>
+                <div>
+                    <h2 class="auth-title">Create Account</h2>
+                    <p class="auth-subtitle">Join us and take control of your money</p>
 
-                    <form action="SignupServlet" method="post" autocomplete="off">
-                        <div class="input-group-custom">
-                            <i class="fa-solid fa-user-astronaut"></i>
-                            <input type="text" name="name" id="name" required>
-                            <label for="name">Identity Name</label>
-                            <div class="underline-bar"></div>
+                    <%
+                        String msg = request.getParameter("msg");
+                        if(msg != null){
+                    %>
+                        <div class="alert-error">
+                            <i class="fa-solid fa-circle-exclamation"></i>
+                            <span><%= msg %></span>
                         </div>
-                        
-                        <div class="input-group-custom">
-                            <i class="fa-solid fa-envelope"></i>
-                            <input type="text" name="email" id="email" required>
-                            <label for="email">User Email</label>
-                            <div class="underline-bar"></div>
+                    <% } %>
+
+                    <form action="SignupServlet" method="post">
+                        <div class="position-relative mb-4">
+                            <i class="fa-solid fa-user input-icon"></i>
+                            <div class="form-floating">
+                                <input type="text" class="form-control" id="name" name="name" placeholder="Full Name" required>
+                                <label for="name">Full Name</label>
+                            </div>
                         </div>
-                        
-                        <div class="input-group-custom">
-                            <i class="fa-solid fa-lock"></i>
-                            <input type="password" name="password" id="password" required>
-                            <label for="password">Security Code</label>
-                            <div class="underline-bar"></div>
+
+                        <div class="position-relative mb-4">
+                            <i class="fa-solid fa-envelope input-icon"></i>
+                            <div class="form-floating">
+                                <input type="email" class="form-control" id="email" name="email" placeholder="name@example.com" required>
+                                <label for="email">Email Address</label>
+                            </div>
                         </div>
-                        
-                        <button type="submit" class="btn-neon">
-                            Register Identity
+
+                        <div class="position-relative mb-4">
+                            <i class="fa-solid fa-lock input-icon"></i>
+                            <div class="form-floating">
+                                <input type="password" class="form-control" id="password" name="password" placeholder="Password" required>
+                                <label for="password">Password</label>
+                            </div>
+                        </div>
+
+                        <button type="submit" class="btn btn-auth mt-2">
+                            Sign Up <i class="fa-solid fa-user-plus ms-2"></i>
                         </button>
                     </form>
 
-                    <div class="signup-link">
-                        Existing Entity? 
-                        <a href="login.jsp">Access Terminal</a>
+                    <div class="auth-footer">
+                        <p class="mb-0">Already have an account? <a href="login.jsp" class="auth-link">Sign In</a></p>
                     </div>
                 </div>
             </div>
 
-            <!-- Side B: Visual Overlay -->
-            <div class="auth-welcome-side">
-                <div class="welcome-content">
-                    <div class="welcome-title">
-                        JOIN<br>PROTOCOL
+            <div class="auth-image-side">
+                <div class="auth-image-content">
+                    <div class="brand-logo">
+                        <i class="fa-solid fa-wallet text-white mb-2"></i><br>
+                        TrackMyCash
                     </div>
-                    <div class="welcome-subtitle">
-                        Initiate Financial Node Synchronization.
-                    </div>
+                    <p class="brand-tagline">Master your finances with our beautifully designed tracking dashboard.</p>
                 </div>
-                
-                <div style="position: absolute; top: 10%; left: 10%; width: 150px; height: 150px; border: 1px solid var(--accent-purple); border-radius: 20px; opacity: 0.15; transform: rotate(45deg); animation: rotate-gradient 25s linear infinite;"></div>
-                <div style="position: absolute; bottom: 10%; right: 10%; width: 150px; height: 150px; border: 1px solid var(--accent-cyan); border-radius: 20px; opacity: 0.15; transform: rotate(-45deg); animation: rotate-gradient 20s linear infinite reverse;"></div>
             </div>
+
         </div>
     </div>
 
-    <script>
-        const card = document.getElementById('tilt-card');
-        const wrapper = document.querySelector('.auth-wrapper');
-
-        if (window.innerWidth > 991) {
-            document.addEventListener('mousemove', (e) => {
-                let xAxis = (window.innerWidth / 2 - e.pageX) / 45;
-                let yAxis = (window.innerHeight / 2 - e.pageY) / 45;
-                card.style.transform = `rotateY(${xAxis}deg) rotateX(${-yAxis}deg)`;
-            });
-
-            document.addEventListener('mouseleave', () => {
-                card.style.transform = `rotateY(0deg) rotateX(0deg)`;
-            });
-            
-            wrapper.addEventListener('mouseenter', () => {
-                wrapper.style.animationPlayState = 'paused';
-            });
-            wrapper.addEventListener('mouseleave', () => {
-                wrapper.style.animationPlayState = 'running';
-            });
-        }
-
-        function createParticles() {
-            for (let i = 0; i < 30; i++) {
-                let p = document.createElement('div');
-                p.className = 'particle';
-                let size = Math.random() * 4 + 1;
-                p.style.width = size + 'px';
-                p.style.height = size + 'px';
-                p.style.left = Math.random() * 100 + 'vw';
-                p.style.top = Math.random() * 100 + 'vh';
-                p.style.opacity = Math.random() * 0.5;
-                document.body.appendChild(p);
-                animateParticle(p);
-            }
-        }
-
-        function animateParticle(p) {
-            let duration = Math.random() * 10000 + 7000;
-            p.animate([
-                { transform: 'translate(0, 0)' },
-                { transform: `translate(${Math.random() * 300 - 150}px, ${Math.random() * 300 - 150}px)` }
-            ], {
-                duration: duration,
-                iterations: Infinity,
-                direction: 'alternate',
-                easing: 'ease-in-out'
-            });
-        }
-
-        createParticles();
-    </script>
+    <!-- Bootstrap 5 JS Bundle -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
