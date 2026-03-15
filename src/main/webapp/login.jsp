@@ -10,260 +10,373 @@
     <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <!-- Google Fonts -->
-    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;700;900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Rajdhani:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <style>
         :root {
-            --bg-deep: #050801;
-            --neon-teal: #03e9f4;
-            --text-white: #ffffff;
-            --glass-bg: rgba(255, 255, 255, 0.05);
+            --bg-dark: #020617;
+            --accent-cyan: #06b6d4;
+            --accent-blue: #3b82f6;
+            --accent-purple: #8b5cf6;
+            --text-primary: #f8fafc;
+            --text-secondary: #94a3b8;
+            --glass-bg: rgba(15, 23, 42, 0.6);
+            --glass-border: rgba(255, 255, 255, 0.1);
+            --neon-shadow: 0 0 20px rgba(6, 182, 212, 0.5);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
         }
 
         body {
-            margin: 0;
-            padding: 0;
-            font-family: 'Montserrat', sans-serif;
-            background: radial-gradient(#050801, #000000);
+            font-family: 'Rajdhani', sans-serif;
+            background: radial-gradient(circle at top right, #0f172a, #020617);
+            color: var(--text-primary);
             min-height: 100vh;
             display: flex;
             align-items: center;
             justify-content: center;
-            overflow: hidden;
+            overflow-x: hidden;
+            position: relative;
+        }
+
+        /* Animated Background Elements */
+        .bg-glow {
+            position: absolute;
+            width: 400px;
+            height: 400px;
+            background: radial-gradient(circle, rgba(6, 182, 212, 0.15) 0%, transparent 70%);
+            border-radius: 50%;
+            z-index: -1;
+            filter: blur(50px);
+            animation: pulse-glow 10s infinite alternate;
+        }
+
+        @keyframes pulse-glow {
+            0% { transform: translate(-10%, -10%) scale(1); opacity: 0.5; }
+            100% { transform: translate(10%, 10%) scale(1.2); opacity: 0.8; }
         }
 
         .auth-container {
             position: relative;
             width: 100%;
-            max-width: 900px;
-            min-height: 500px;
-            background: var(--glass-bg);
-            backdrop-filter: blur(15px);
-            border: 2px solid var(--neon-teal);
-            box-shadow: 0 0 50px rgba(3, 233, 244, 0.3);
-            border-radius: 10px;
+            max-width: 1000px;
+            min-height: 600px;
             display: flex;
+            background: var(--glass-bg);
+            backdrop-filter: blur(20px);
+            border-radius: 24px;
+            border: 1px solid var(--glass-border);
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
             overflow: hidden;
             margin: 20px;
+            transition: transform 0.3s ease;
         }
 
-        /* Ambient Glow effect on border */
+        /* Neon Border Animation */
         .auth-container::before {
             content: '';
             position: absolute;
-            top: 0; left: 0; width: 100%; height: 100%;
-            border: 1px solid var(--neon-teal);
-            box-shadow: inset 0 0 15px rgba(3, 233, 244, 0.5);
-            pointer-events: none;
-            z-index: 10;
+            inset: -2px;
+            background: linear-gradient(45deg, var(--accent-cyan), transparent, var(--accent-purple), transparent, var(--accent-cyan));
+            background-size: 400% 400%;
+            z-index: -1;
+            animation: border-glow 15s linear infinite;
+            border-radius: 26px;
+        }
+
+        @keyframes border-glow {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
         }
 
         .auth-form-side {
-            flex: 1.2;
+            flex: 1;
             padding: 60px;
             display: flex;
             flex-direction: column;
             justify-content: center;
-            z-index: 5;
+            background: rgba(15, 23, 42, 0.3);
         }
 
         .auth-welcome-side {
-            flex: 0.8;
-            background: linear-gradient(135deg, rgba(3, 233, 244, 0.1), transparent);
+            flex: 1;
+            padding: 60px;
             display: flex;
-            align-items: center;
+            flex-direction: column;
             justify-content: center;
-            padding: 40px;
-            border-left: 1px solid rgba(3, 233, 244, 0.2);
-            z-index: 5;
+            align-items: center;
+            background: linear-gradient(135deg, rgba(6, 182, 212, 0.1), rgba(139, 92, 246, 0.1));
+            border-left: 1px solid var(--glass-border);
+            position: relative;
+            overflow: hidden;
         }
 
-        .welcome-text {
-            color: var(--neon-teal);
+        .welcome-content {
+            text-align: center;
+            z-index: 2;
+        }
+
+        .welcome-title {
+            font-family: 'Orbitron', sans-serif;
             font-size: 3.5rem;
             font-weight: 900;
+            background: linear-gradient(45deg, var(--accent-cyan), var(--accent-purple));
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 20px;
             line-height: 1.1;
             text-transform: uppercase;
-            letter-spacing: 5px;
-            opacity: 0.8;
-            user-select: none;
-            text-shadow: 0 0 10px rgba(3, 233, 244, 0.5);
+            letter-spacing: 4px;
+        }
+
+        .welcome-subtitle {
+            font-size: 1.25rem;
+            color: var(--text-secondary);
+            max-width: 300px;
+            margin: 0 auto;
+            letter-spacing: 1px;
         }
 
         .login-box h2 {
-            margin: 0 0 40px;
-            padding: 0;
-            color: var(--text-white);
-            font-size: 2.2rem;
+            font-family: 'Orbitron', sans-serif;
+            margin-bottom: 40px;
+            font-size: 2.5rem;
             font-weight: 700;
+            letter-spacing: 2px;
+            color: var(--text-primary);
         }
 
-        .user-box {
+        .input-group-custom {
             position: relative;
-            margin-bottom: 30px;
+            margin-bottom: 35px;
         }
 
-        .user-box input {
-            width: 100%;
-            padding: 10px 0;
-            font-size: 16px;
-            color: #fff;
-            margin-bottom: 30px;
-            border: none;
-            border-bottom: 1px solid #fff;
-            outline: none;
-            background: transparent;
-            transition: 0.5s;
-        }
-
-        .user-box label {
+        .input-group-custom label {
             position: absolute;
-            top: 0;
-            left: 0;
-            padding: 10px 0;
-            font-size: 16px;
-            color: #fff;
-            pointer-events: none;
-            transition: 0.5s;
-        }
-
-        .user-box input:focus ~ label,
-        .user-box input:valid ~ label {
-            top: -20px;
-            left: 0;
-            color: var(--neon-teal);
-            font-size: 12px;
-        }
-
-        .user-box input:focus {
-            border-bottom: 1px solid var(--neon-teal);
-            box-shadow: 0 1px 0 0 var(--neon-teal);
-        }
-
-        .user-box i {
-            position: absolute;
-            right: 0;
-            top: 10px;
-            color: rgba(255, 255, 255, 0.5);
+            left: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--text-secondary);
             font-size: 1.1rem;
+            transition: all 0.3s ease;
+            pointer-events: none;
+            background: transparent;
+            padding: 0 5px;
+        }
+
+        .input-group-custom input {
+            width: 100%;
+            padding: 15px 15px 15px 45px;
+            background: rgba(15, 23, 42, 0.5);
+            border: 1px solid var(--glass-border);
+            border-radius: 12px;
+            color: var(--text-primary);
+            font-size: 1.1rem;
+            outline: none;
+            transition: all 0.3s ease;
+        }
+
+        .input-group-custom i {
+            position: absolute;
+            left: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--accent-cyan);
+            font-size: 1.2rem;
+            transition: all 0.3s ease;
+        }
+
+        .input-group-custom input:focus,
+        .input-group-custom input:valid {
+            border-color: var(--accent-cyan);
+            box-shadow: 0 0 15px rgba(6, 182, 212, 0.2);
+            padding-left: 45px;
+        }
+
+        .input-group-custom input:focus ~ label,
+        .input-group-custom input:valid ~ label {
+            top: -12px;
+            left: 10px;
+            font-size: 0.9rem;
+            color: var(--accent-cyan);
+            background: #020617;
+            padding: 0 10px;
+            border-radius: 4px;
         }
 
         /* Neon Button */
-        .neon-btn {
-            position: relative;
-            display: inline-block;
-            padding: 15px 30px;
-            color: var(--neon-teal);
-            font-size: 16px;
-            text-decoration: none;
-            text-transform: uppercase;
-            overflow: hidden;
-            transition: 0.5s;
-            margin-top: 20px;
-            letter-spacing: 4px;
-            background: transparent;
-            border: 1px solid var(--neon-teal);
-            cursor: pointer;
+        .btn-neon {
             width: 100%;
+            padding: 15px;
+            margin-top: 10px;
+            background: transparent;
+            border: 2px solid var(--accent-cyan);
+            color: var(--accent-cyan);
+            font-family: 'Orbitron', sans-serif;
+            font-size: 1.2rem;
             font-weight: 700;
-            border-radius: 5px;
+            text-transform: uppercase;
+            border-radius: 12px;
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
+            transition: all 0.5s ease;
+            letter-spacing: 2px;
         }
 
-        .neon-btn:hover {
-            background: var(--neon-teal);
+        .btn-neon:hover {
+            background: var(--accent-cyan);
             color: #fff;
-            border-radius: 5px;
-            box-shadow: 0 0 5px var(--neon-teal),
-                        0 0 25px var(--neon-teal),
-                        0 0 50px var(--neon-teal),
-                        0 0 100px var(--neon-teal);
+            box-shadow: 0 0 10px var(--accent-cyan), 0 0 40px var(--accent-cyan);
+            transform: translateY(-2px);
+        }
+
+        .btn-neon::after {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: linear-gradient(45deg, transparent, rgba(255,255,255,0.3), transparent);
+            transform: rotate(45deg);
+            transition: 0.8s;
+            opacity: 0;
+        }
+
+        .btn-neon:hover::after {
+            left: 100%;
+            opacity: 1;
         }
 
         .signup-link {
             margin-top: 30px;
             text-align: center;
-            color: #fff;
-            font-size: 0.9rem;
-            opacity: 0.7;
+            color: var(--text-secondary);
+            font-size: 1.1rem;
         }
 
         .signup-link a {
-            color: var(--neon-teal);
+            color: var(--accent-cyan);
             text-decoration: none;
             font-weight: 700;
+            transition: all 0.3s ease;
         }
 
         .signup-link a:hover {
+            text-shadow: 0 0 8px var(--accent-cyan);
             text-decoration: underline;
         }
 
-        .alert-error {
-            background: rgba(255, 0, 0, 0.1);
-            border: 1px solid #ff0000;
-            color: #ff0000;
-            padding: 10px;
-            border-radius: 5px;
-            margin-bottom: 20px;
-            font-size: 0.85rem;
+        .alert-custom {
+            background: rgba(239, 68, 68, 0.1);
+            border: 1px solid #ef4444;
+            color: #ef4444;
+            padding: 15px;
+            border-radius: 12px;
+            margin-bottom: 25px;
+            font-size: 1rem;
             text-align: center;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            animation: shake 0.5s ease-in-out;
         }
 
-        @media (max-width: 768px) {
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-5px); }
+            75% { transform: translateX(5px); }
+        }
+
+        /* Mobile Responsiveness */
+        @media (max-width: 991px) {
+            .auth-container {
+                max-width: 500px;
+                flex-direction: column;
+            }
             .auth-welcome-side {
                 display: none;
             }
-            .auth-container {
-                max-width: 450px;
-            }
             .auth-form-side {
-                padding: 40px;
+                padding: 40px 30px;
+            }
+        }
+
+        @media (max-width: 576px) {
+            .auth-container {
+                margin: 10px;
+                border-radius: 16px;
+            }
+            .login-box h2 {
+                font-size: 2rem;
             }
         }
     </style>
 </head>
 <body>
 
+    <div class="bg-glow" style="top: 10%; right: 10%;"></div>
+    <div class="bg-glow" style="bottom: 10%; left: 10%; animation-delay: -5s;"></div>
+
     <div class="auth-container">
         <!-- Main Form Side -->
         <div class="auth-form-side">
             <div class="login-box">
-                <h2>Login</h2>
+                <h2>LOGIN</h2>
 
                 <% if(request.getParameter("msg")!=null){ %>
-                    <div class="alert-error">
-                        <i class="fa-solid fa-triangle-exclamation me-2"></i>
+                    <div class="alert-custom">
+                        <i class="fa-solid fa-circle-exclamation"></i>
                         <%= request.getParameter("msg") %>
                     </div>
                 <% } %>
 
-                <form action="LoginServlet" method="post">
-                    <div class="user-box">
-                        <input type="text" name="email" required="">
-                        <label>Username</label>
-                        <i class="fa-solid fa-user"></i>
-                    </div>
-                    <div class="user-box">
-                        <input type="password" name="password" required="">
-                        <label>Password</label>
-                        <i class="fa-solid fa-lock"></i>
+                <form action="LoginServlet" method="post" autocomplete="off">
+                    <div class="input-group-custom">
+                        <i class="fa-solid fa-envelope"></i>
+                        <input type="text" name="email" id="email" required>
+                        <label for="email">Username / Email</label>
                     </div>
                     
-                    <button type="submit" class="neon-btn">
-                        Login
+                    <div class="input-group-custom">
+                        <i class="fa-solid fa-shield-halved"></i>
+                        <input type="password" name="password" id="password" required>
+                        <label for="password">Security Key</label>
+                    </div>
+                    
+                    <button type="submit" class="btn-neon">
+                        ACCESS SYSTEM
                     </button>
                 </form>
 
                 <div class="signup-link">
-                    Don't have an account? <br>
-                    <a href="signup.jsp">Sign Up</a>
+                    Don't have an ID? 
+                    <a href="signup.jsp">Register Now</a>
                 </div>
             </div>
         </div>
 
         <!-- Welcome Text Side -->
         <div class="auth-welcome-side">
-            <div class="welcome-text">
-                Welcome<br>Back!
+            <div class="welcome-content">
+                <div class="welcome-title">
+                    WELCOME<br>BACK
+                </div>
+                <div class="welcome-subtitle">
+                    Initialize your financial dashboard and track your digital assets.
+                </div>
             </div>
+            
+            <!-- Abstract background shape -->
+            <div style="position: absolute; top: -50px; right: -50px; width: 200px; height: 200px; background: var(--accent-cyan); opacity: 0.1; filter: blur(80px); border-radius: 50%;"></div>
+            <div style="position: absolute; bottom: -50px; left: -50px; width: 250px; height: 250px; background: var(--accent-purple); opacity: 0.1; filter: blur(80px); border-radius: 50%;"></div>
         </div>
     </div>
 
