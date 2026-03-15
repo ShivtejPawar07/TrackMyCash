@@ -28,7 +28,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>TrackMyCash - Command Center</title>
     <!-- Bootstrap 5 CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
@@ -56,6 +56,7 @@
         body {
             margin: 0;
             height: 100vh;
+            height: 100dvh; /* Dynamic viewport height for mobile browser bars */
             background: var(--bg-dark);
             color: var(--text-main);
             overflow: hidden;
@@ -73,6 +74,7 @@
             align-items: center;
             border-bottom: 1px solid var(--glass-border);
             z-index: 100;
+            flex-shrink: 0;
         }
 
         .top-nav h2 {
@@ -107,7 +109,7 @@
         .app-container {
             flex: 1;
             display: flex;
-            height: calc(100vh - 65px);
+            height: 0; /* Important for flex-grow to work without overflow issues */
             position: relative;
         }
 
@@ -120,6 +122,7 @@
             display: flex;
             flex-direction: column;
             z-index: 50;
+            flex-shrink: 0;
         }
 
         .sidebar-header {
@@ -182,6 +185,7 @@
             display: flex;
             align-items: center;
             gap: 15px;
+            flex-shrink: 0;
         }
 
         .back-btn {
@@ -245,6 +249,7 @@
             padding: 15px 20px;
             background: rgba(15, 23, 42, 0.7);
             border-top: 1px solid var(--glass-border);
+            flex-shrink: 0;
         }
 
         .input-row { display: flex; gap: 10px; }
@@ -297,7 +302,8 @@
 
         /* WHATSAPP STYLE MOBILE NAVIGATION */
         @media (max-width: 991px) {
-            .app-container { height: calc(100vh - 65px); }
+            body { height: 100dvh; }
+            .app-container { height: calc(100dvh - 65px); }
 
             <% if (!hasSelectedCustomer) { %>
                 /* Show List, Hide Chat */
@@ -313,7 +319,7 @@
             <% } %>
 
             .ledger-header { padding: 15px 20px; position: sticky; top: 0; z-index: 200; }
-            .ledger-chat { padding-bottom: 80px; }
+            .ledger-chat { padding-bottom: 20px; }
             .input-row { flex-wrap: wrap; }
             .input-row input { width: 100%; margin-bottom: 5px; }
             .btn-action { flex: 1; padding: 15px; }
@@ -326,8 +332,8 @@
     <nav class="top-nav">
         <h2>Track<span class="user-name">MyCash</span></h2>
         <div class="d-flex align-items-center gap-3">
-            <span class="d-none d-sm-inline opacity-50">Hello, <%=userName%></span>
-            <a href="LogoutServlet" class="logout-btn">Logout</a>
+            <span class="d-none d-sm-inline opacity-50">Identity: <%=userName%></span>
+            <a href="LogoutServlet" class="logout-btn">Exit</a>
         </div>
     </nav>
 
@@ -406,15 +412,15 @@
                 <div class="flex-grow-1">
                     <h3><%=customerName%></h3>
                     <div style="font-size: 12px; color: <%= netTotal >= 0 ? "var(--accent-cyan)" : "var(--accent-red)" %>;">
-                        Net: ₹<%=Math.abs(netTotal)%> <%= netTotal >= 0 ? "(You get)" : "(You give)" %>
+                        Net Protocol: ₹<%=Math.abs(netTotal)%> <%= netTotal >= 0 ? "(You get)" : "(You give)" %>
                     </div>
                 </div>
                 <!-- Mini Dropdown for Edit/Delete -->
                 <div class="dropdown">
                     <button class="icon-btn text-white opacity-50" data-bs-toggle="dropdown"><i class="fa-solid fa-ellipsis-vertical"></i></button>
                     <ul class="dropdown-menu dropdown-menu-dark dropdown-menu-end" style="background:#1e293b; border: 1px solid var(--glass-border);">
-                        <li><a class="dropdown-item" href="#" onclick="openEditCustomer('<%=cid%>','<%=customerName%>')"><i class="fa-solid fa-pen-me-2"></i> Edit</a></li>
-                        <li><a class="dropdown-item text-danger" href="#" onclick="deleteCustomer('<%=cid%>')"><i class="fa-solid fa-trash me-2"></i> Delete</a></li>
+                        <li><a class="dropdown-item" href="#" onclick="openEditCustomer('<%=cid%>','<%=customerName%>')"><i class="fa-solid fa-pen-to-square me-2"></i> Edit Profile</a></li>
+                        <li><a class="dropdown-item text-danger" href="#" onclick="deleteCustomer('<%=cid%>')"><i class="fa-solid fa-trash-can me-2"></i> Purge Identity</a></li>
                     </ul>
                 </div>
             </div>
@@ -422,10 +428,18 @@
             <div class="ledger-chat" id="chatBox">
                 <%
                     try {
-                        String lastDate = "";
+                        String lastDateStr = "";
+                        // Standard formats for IST
                         SimpleDateFormat dateOnly = new SimpleDateFormat("dd-MM-yyyy");
                         SimpleDateFormat displayDate = new SimpleDateFormat("dd MMM yyyy");
                         SimpleDateFormat timeFmt = new SimpleDateFormat("hh:mm a");
+                        
+                        // CALIBRATE TO IST
+                        TimeZone ist = TimeZone.getTimeZone("Asia/Kolkata");
+                        dateOnly.setTimeZone(ist);
+                        displayDate.setTimeZone(ist);
+                        timeFmt.setTimeZone(ist);
+
                         PreparedStatement ps2 = con.prepareStatement("SELECT * FROM transactions WHERE customer_id=? ORDER BY date");
                         ps2.setInt(1, Integer.parseInt(cid));
                         ResultSet rs2 = ps2.executeQuery();
@@ -433,21 +447,28 @@
                             Timestamp ts = rs2.getTimestamp("date");
                             java.util.Date d = new java.util.Date(ts.getTime());
                             String currDate = dateOnly.format(d);
-                            if(!currDate.equals(lastDate)){
+                            if(!currDate.equals(lastDateStr)){
                                 String label = displayDate.format(d);
-                                Calendar c1 = Calendar.getInstance(); Calendar c2 = Calendar.getInstance(); c2.setTime(d);
-                                if(c1.get(Calendar.DAY_OF_YEAR) == c2.get(Calendar.DAY_OF_YEAR)) label = "Today";
-                                else { c1.add(Calendar.DATE, -1); if(c1.get(Calendar.DAY_OF_YEAR) == c2.get(Calendar.DAY_OF_YEAR)) label = "Yesterday"; }
+                                Calendar c1 = Calendar.getInstance(ist); 
+                                Calendar c2 = Calendar.getInstance(ist); 
+                                c2.setTime(d);
+                                if(c1.get(Calendar.DAY_OF_YEAR) == c2.get(Calendar.DAY_OF_YEAR) && c1.get(Calendar.YEAR) == c2.get(Calendar.YEAR)) 
+                                    label = "Today";
+                                else { 
+                                    c1.add(Calendar.DATE, -1); 
+                                    if(c1.get(Calendar.DAY_OF_YEAR) == c2.get(Calendar.DAY_OF_YEAR) && c1.get(Calendar.YEAR) == c2.get(Calendar.YEAR)) 
+                                        label = "Yesterday"; 
+                                }
                 %>
                 <div class="date-divider"><span><%=label%></span></div>
                 <%
-                                lastDate = currDate;
+                                lastDateStr = currDate;
                             }
                             String type = rs2.getString("type");
                 %>
                 <div class="bubble <%=type.equals("gave") ? "paid" : "received"%>">
                     <% if(rs2.getString("note") != null && !rs2.getString("note").isEmpty()) { %>
-                        <span class="note"><%=rs2.getString("note")%></span>
+                        <span class="note text-uppercase opacity-75" style="font-size: 11px; letter-spacing: 1px;"><%=rs2.getString("note")%></span>
                     <% } %>
                     <span class="amount">₹<%=rs2.getDouble("amount")%></span>
                     <div class="time"><%=timeFmt.format(d)%></div>
@@ -456,11 +477,11 @@
             </div>
 
             <div class="ledger-footer">
-                <form action="AddTransactionServlet" method="post">
+                <form action="AddTransactionServlet" method="post" autocomplete="off">
                     <input type="hidden" name="cid" value="<%=cid%>">
                     <div class="input-row">
-                        <input type="number" name="amount" min="1" placeholder="Amount (₹)" required>
-                        <input type="text" name="note" placeholder="Transaction note...">
+                        <input type="number" name="amount" min="1" step="0.01" placeholder="Protocol Amount" required>
+                        <input type="text" name="note" placeholder="Data Note...">
                         <button type="submit" name="type" value="gave" class="btn-action btn-paid">PAID</button>
                         <button type="submit" name="type" value="got" class="btn-action btn-received">GOT</button>
                     </div>
@@ -469,8 +490,8 @@
 
             <% } else { %>
             <div class="d-none d-lg-flex flex-column justify-content-center align-items-center h-100 opacity-25">
-                <i class="fa-solid fa-comments-dollar fs-1 mb-3"></i>
-                <p>Select a contact to view transaction history</p>
+                <i class="fa-solid fa-microchip fs-1 mb-3"></i>
+                <p>Select an identity to initialize ledger protocol</p>
             </div>
             <% } %>
         </div>
@@ -480,13 +501,13 @@
     <div id="addCustomerModal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.8); backdrop-filter:blur(10px); justify-content:center; align-items:center; z-index:2000;">
         <div class="modal-content" style="width:90%; max-width:400px; padding:30px;">
             <div class="d-flex justify-content-between mb-4">
-                <h3 style="margin:0; font-size:20px; color:var(--accent-cyan);">New Contact</h3>
+                <h3 style="margin:0; font-size:20px; color:var(--accent-cyan);">Register Identity</h3>
                 <span onclick="this.parentElement.parentElement.parentElement.style.display='none'" style="cursor:pointer; font-size:24px;">&times;</span>
             </div>
             <form action="AddCustomerServlet" method="post">
-                <input type="text" name="name" class="form-control mb-3 bg-dark text-white border-secondary p-3" placeholder="Full Name" required>
-                <input type="text" name="phone" class="form-control mb-4 bg-dark text-white border-secondary p-3" placeholder="Phone (Optional)">
-                <button type="submit" class="btn-action btn-paid w-100 py-3">SAVE CONTACT</button>
+                <input type="text" name="name" class="form-control mb-3 bg-dark text-white border-secondary p-3" placeholder="Entity Name" required>
+                <input type="text" name="phone" class="form-control mb-4 bg-dark text-white border-secondary p-3" placeholder="Contact Protocol (Optional)">
+                <button type="submit" class="btn-action btn-paid w-100 py-3">SAVE PROTOCOL</button>
             </form>
         </div>
     </div>
@@ -494,13 +515,13 @@
     <div id="editCustomerModal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.8); backdrop-filter:blur(10px); justify-content:center; align-items:center; z-index:2000;">
         <div class="modal-content" style="width:90%; max-width:400px; padding:30px;">
             <div class="d-flex justify-content-between mb-4">
-                <h3 style="margin:0; font-size:20px; color:var(--accent-cyan);">Edit Contact</h3>
+                <h3 style="margin:0; font-size:20px; color:var(--accent-cyan);">Update Identity</h3>
                 <span onclick="this.parentElement.parentElement.parentElement.style.display='none'" style="cursor:pointer; font-size:24px;">&times;</span>
             </div>
             <form action="UpdateCustomerServlet" method="post">
                 <input type="hidden" name="cid" id="editCid">
                 <input type="text" name="name" id="editName" class="form-control mb-3 bg-dark text-white border-secondary p-3" placeholder="Name" required>
-                <button type="submit" class="btn-action btn-paid w-100 py-3">UPDATE IDENTITY</button>
+                <button type="submit" class="btn-action btn-paid w-100 py-3">SUBMIT AMENDMENT</button>
             </form>
         </div>
     </div>
@@ -508,7 +529,7 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script>
         // Search Filter
-        document.getElementById('searchCustomer').addEventListener('input', function() {
+        document.getElementById('searchCustomer')?.addEventListener('input', function() {
             let filter = this.value.toLowerCase();
             document.querySelectorAll('.customer-item').forEach(function(item) {
                 item.style.display = item.innerText.toLowerCase().includes(filter) ? 'flex' : 'none';
@@ -522,7 +543,7 @@
         }
 
         function deleteCustomer(cid) {
-            if (confirm("Permanently delete this customer and all transaction logs?")) {
+            if (confirm("DANGER: This will permanently purge the identity and all associated ledger data. Proceed?")) {
                 window.location.href = "DeleteCustomerServlet?cid=" + cid;
             }
         }
