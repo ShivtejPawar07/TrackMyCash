@@ -6,28 +6,20 @@
 
 <%
     // Session Security Check
-    Object userIdObj = session.getAttribute("userId");
-    if(userIdObj == null){
-        System.out.println("[Dashboard JSP] No userId in session, redirecting to login...");
+    if(session.getAttribute("userId") == null){
         response.sendRedirect("login.jsp");
         return;
     }
     
-    int uid = (int)userIdObj;
+    int uid = (int)session.getAttribute("userId");
     String userName = (String)session.getAttribute("userName");
-    if (userName == null || userName.trim().isEmpty()) userName = "User";
+    if (userName == null) userName = "User";
 
     Connection con = null;
-    String dbError = null;
-    double overallBalance = 0;
-    
     try {
         con = DBConnection.getConnection();
-        if (con == null) {
-            dbError = "Database connection returned null. Check your Environment Variables (DB_URL, DB_USER, DB_PASSWORD).";
-        }
     } catch (Exception e) {
-        dbError = e.getMessage();
+        // Handle connection error if needed
     }
 %>
 
@@ -36,280 +28,741 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Track My Cash - Dashboard</title>
-    <!-- Bootstrap 5 CSS -->
+    <title>TrackMyCash - Command Center</title>
+    <!-- Bootstrap 5 CSS (Optional but helpful for modals) -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <!-- FontAwesome -->
+    <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <!-- Google Fonts -->
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <!-- Chart.js -->
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     
     <style>
         :root {
-            --bg-dark: #0f172a; --bg-card: #1e293b; --bg-sidebar: #0f172a;
-            --text-main: #f8fafc; --text-muted: #94a3b8; --border-color: #334155;
-            --accent-primary: #3b82f6; --accent-glow: rgba(59, 130, 246, 0.5);
-            --income-color: #10b981; --expense-color: #ef4444; --sidebar-width: 280px;
+            --bg-dark: #050b14;
+            --accent-cyan: #00eaff;
+            --accent-blue: #0099ff;
+            --accent-purple: #8b5cf6;
+            --accent-red: #ff4d6d;
+            --glass-bg: rgba(255, 255, 255, 0.06);
+            --glass-border: rgba(255, 255, 255, 0.1);
+            --text-main: #e8fdff;
+            --text-muted: #94a3b8;
         }
-        body.light-mode {
-            --bg-dark: #f8fafc; --bg-card: #ffffff; --bg-sidebar: #ffffff;
-            --text-main: #0f172a; --text-muted: #64748b; --border-color: #e2e8f0;
-            --accent-primary: #2563eb; --accent-glow: rgba(37, 99, 235, 0.3);
+
+        * {
+            box-sizing: border-box;
+            font-family: 'Segoe UI', sans-serif;
         }
+
         body {
-            font-family: 'Inter', sans-serif; background-color: var(--bg-dark); color: var(--text-main);
-            margin: 0; padding: 0; transition: background-color 0.3s, color 0.3s;
+            margin: 0;
+            height: 100vh;
+            background: var(--bg-dark);
+            color: var(--text-main);
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
         }
-        #app-wrapper { display: flex; height: 100vh; overflow: hidden; }
-        #sidebar {
-            width: var(--sidebar-width); background-color: var(--bg-sidebar); border-right: 1px solid var(--border-color);
-            display: flex; flex-direction: column; transition: all 0.3s ease; z-index: 1000;
+
+        /* TOP NAVIGATION */
+        .top-nav {
+            padding: 15px 30px;
+            background: rgba(0, 0, 0, 0.3);
+            backdrop-filter: blur(10px);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid var(--glass-border);
+            z-index: 100;
         }
-        .brand-box {
-            height: 70px; display: flex; align-items: center; padding: 0 1.5rem;
-            border-bottom: 1px solid var(--border-color); font-size: 1.25rem; font-weight: 700;
-            color: var(--accent-primary); text-decoration: none;
+
+        .top-nav h2 {
+            margin: 0;
+            font-size: 22px;
+            font-weight: 600;
         }
-        .brand-box i { margin-right: 10px; font-size: 1.5rem; }
-        .search-box { padding: 1rem; border-bottom: 1px solid var(--border-color); }
-        .search-box input {
-            background-color: var(--bg-card); border: 1px solid var(--border-color);
-            color: var(--text-main); border-radius: 8px; padding: 0.6rem 1rem; width: 100%;
+
+        .top-nav .user-name {
+            background: linear-gradient(90deg, var(--accent-cyan), var(--accent-blue));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            font-weight: 700;
         }
-        .customer-list-container { flex: 1; overflow-y: auto; padding: 0.5rem 1rem; }
+
+        .logout-btn {
+            padding: 8px 20px;
+            background: rgba(255, 77, 77, 0.15);
+            border: 1px solid #ff4d4d;
+            color: #ff4d4d;
+            text-decoration: none;
+            border-radius: 30px;
+            font-size: 14px;
+            font-weight: bold;
+            transition: all 0.3s;
+        }
+
+        .logout-btn:hover {
+            background: #ff4d4d;
+            color: #fff;
+            box-shadow: 0 0 15px rgba(255, 77, 77, 0.4);
+        }
+
+        /* MAIN APP CONTAINER */
+        .app-container {
+            flex: 1;
+            display: flex;
+            height: calc(100vh - 70px);
+        }
+
+        /* SIDEBAR (LEFT) */
+        .sidebar {
+            width: 350px;
+            background: rgba(15, 23, 42, 0.4);
+            backdrop-filter: blur(20px);
+            border-right: 1px solid var(--glass-border);
+            display: flex;
+            flex-direction: column;
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .sidebar-header {
+            padding: 25px;
+            border-bottom: 1px solid var(--glass-border);
+        }
+
+        .sidebar-title-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .sidebar-title-row h3 {
+            margin: 0;
+            color: var(--accent-cyan);
+            font-size: 18px;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+        }
+
+        .icon-btn {
+            background: none;
+            border: none;
+            color: var(--text-muted);
+            font-size: 20px;
+            cursor: pointer;
+            transition: color 0.3s;
+        }
+
+        .icon-btn:hover { color: var(--accent-cyan); }
+
+        #searchCustomer {
+            width: 100%;
+            padding: 12px 15px;
+            border-radius: 12px;
+            border: 1px solid var(--glass-border);
+            background: rgba(255, 255, 255, 0.05);
+            color: #fff;
+            outline: none;
+            transition: all 0.3s;
+        }
+
+        #searchCustomer:focus {
+            border-color: var(--accent-cyan);
+            box-shadow: 0 0 10px rgba(0, 234, 255, 0.2);
+        }
+
+        /* CUSTOMER LIST */
+        .customer-list {
+            flex: 1;
+            overflow-y: auto;
+            padding: 10px;
+        }
+
+        .customer-list::-webkit-scrollbar { width: 5px; }
+        .customer-list::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.1); border-radius: 10px; }
+
         .customer-item {
-            display: flex; justify-content: space-between; align-items: center;
-            padding: 0.75rem 1rem; margin-bottom: 0.25rem; border-radius: 8px;
-            color: var(--text-main); text-decoration: none; transition: all 0.2s;
+            padding: 15px 20px;
+            margin-bottom: 8px;
+            border-radius: 15px;
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid transparent;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
         }
-        .customer-item:hover, .customer-item.active { background-color: rgba(59, 130, 246, 0.1); color: var(--accent-primary); }
-        .avatar {
-            width: 32px; height: 32px; border-radius: 50%;
-            background: linear-gradient(135deg, var(--accent-primary), #8b5cf6);
-            display: flex; align-items: center; justify-content: center;
-            color: white; font-weight: 600; margin-right: 10px; font-size: 0.85rem;
+
+        .customer-item:hover {
+            background: rgba(255, 255, 255, 0.06);
+            border-color: var(--glass-border);
+            transform: translateX(5px);
         }
-        #main-content { flex: 1; display: flex; flex-direction: column; background-color: var(--bg-dark); overflow-y: auto; }
-        .topbar {
-            height: 70px; background-color: var(--bg-sidebar); border-bottom: 1px solid var(--border-color);
-            display: flex; justify-content: space-between; align-items: center; padding: 0 2rem;
-            position: sticky; top: 0; z-index: 100;
+
+        .customer-item.active {
+            background: linear-gradient(90deg, rgba(0, 234, 255, 0.1), transparent);
+            border-left: 4px solid var(--accent-cyan);
+            border-color: rgba(0, 234, 255, 0.2);
         }
-        .fin-card {
-            background-color: var(--bg-card); border-radius: 16px; padding: 1.5rem; border: 1px solid var(--border-color);
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); transition: transform 0.3s;
+
+        .customer-info b {
+            display: block;
+            font-size: 16px;
+            color: #fff;
         }
-        .fin-card.primary { background: linear-gradient(135deg, var(--accent-primary), #8b5cf6); color: white; border: none; }
-        .fin-card:hover { transform: translateY(-5px); }
-        .table-container { background-color: var(--bg-card); border: 1px solid var(--border-color); border-radius: 16px; overflow: hidden; }
-        .badge-income { background-color: rgba(16, 185, 129, 0.1); color: var(--income-color); padding: 0.4em 0.8em; border-radius: 6px; font-weight: 600; }
-        .badge-expense { background-color: rgba(239, 68, 68, 0.1); color: var(--expense-color); padding: 0.4em 0.8em; border-radius: 6px; font-weight: 600; }
-        .fab-btn {
-            position: fixed; bottom: 2rem; right: 2rem; width: 60px; height: 60px; border-radius: 50%;
-            background: linear-gradient(135deg, var(--accent-primary), #8b5cf6);
-            color: white; display: flex; align-items: center; justify-content: center;
-            font-size: 1.5rem; box-shadow: 0 10px 25px var(--accent-glow); z-index: 90; border: none;
+
+        .customer-balance {
+            font-size: 13px;
+            margin-top: 4px;
         }
+
+        .bal-pos { color: var(--accent-cyan); }
+        .bal-neg { color: var(--accent-red); }
+
+        /* CONTENT AREA (RIGHT) */
+        .content-area {
+            flex: 1;
+            background: rgba(0, 0, 0, 0.2);
+            display: flex;
+            flex-direction: column;
+            position: relative;
+        }
+
+        .ledger-header {
+            padding: 20px 40px;
+            background: rgba(255, 255, 255, 0.02);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid var(--glass-border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .ledger-header h3 {
+            margin: 0;
+            color: #fff;
+            font-size: 24px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .ledger-header h3:hover { color: var(--accent-cyan); }
+
+        /* CHAT LEDGER */
+        .ledger-chat {
+            flex: 1;
+            padding: 30px 40px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            background: radial-gradient(circle at center, rgba(0, 234, 255, 0.03) 0%, transparent 80%);
+        }
+
+        .ledger-chat::-webkit-scrollbar { width: 6px; }
+        .ledger-chat::-webkit-scrollbar-thumb { background: rgba(0, 234, 255, 0.2); border-radius: 10px; }
+
+        .date-divider {
+            text-align: center;
+            margin: 20px 0;
+            position: relative;
+        }
+
+        .date-divider span {
+            background: #222;
+            color: var(--text-muted);
+            font-size: 12px;
+            padding: 5px 15px;
+            border-radius: 20px;
+            border: 1px solid var(--glass-border);
+        }
+
+        .bubble {
+            max-width: 60%;
+            padding: 15px 20px;
+            border-radius: 20px;
+            font-size: 15px;
+            position: relative;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+            animation: slideIn 0.3s ease-out;
+        }
+
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .bubble.paid {
+            background: rgba(0, 234, 255, 0.15);
+            border: 1px solid rgba(0, 234, 255, 0.3);
+            margin-left: auto;
+            border-bottom-right-radius: 4px;
+            color: var(--accent-cyan);
+        }
+
+        .bubble.received {
+            background: rgba(255, 77, 109, 0.15);
+            border: 1px solid rgba(255, 77, 109, 0.3);
+            margin-right: auto;
+            border-bottom-left-radius: 4px;
+            color: var(--accent-red);
+        }
+
+        .bubble .note {
+            display: block;
+            font-weight: 500;
+            margin-bottom: 5px;
+            color: #fff;
+        }
+
+        .bubble .amount {
+            font-size: 18px;
+            font-weight: 700;
+        }
+
+        .bubble .time {
+            font-size: 11px;
+            opacity: 0.6;
+            margin-top: 5px;
+            text-align: right;
+        }
+
+        /* LEDGER FOOTER (INPUTS) */
+        .ledger-footer {
+            padding: 20px 40px;
+            background: rgba(15, 23, 42, 0.6);
+            backdrop-filter: blur(20px);
+            border-top: 1px solid var(--glass-border);
+        }
+
+        .input-row {
+            display: flex;
+            gap: 15px;
+        }
+
+        .input-row input {
+            flex: 1;
+            padding: 12px 20px;
+            border-radius: 15px;
+            border: 1px solid var(--glass-border);
+            background: rgba(255, 255, 255, 0.05);
+            color: #fff;
+            outline: none;
+        }
+
+        .input-row input:focus { border-color: var(--accent-cyan); }
+
+        .btn-action {
+            padding: 0 25px;
+            border: none;
+            border-radius: 30px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 14px;
+        }
+
+        .btn-paid {
+            background: var(--accent-cyan);
+            color: #002a33;
+            box-shadow: 0 0 15px rgba(0, 234, 255, 0.4);
+        }
+
+        .btn-received {
+            background: var(--accent-red);
+            color: #fff;
+            box-shadow: 0 0 15px rgba(255, 77, 109, 0.4);
+        }
+
+        .btn-action:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 0 25px currentColor;
+        }
+
+        /* MODALS */
+        .modal-content {
+            background: #0f172a;
+            border: 1px solid var(--glass-border);
+            border-radius: 20px;
+            color: #fff;
+            box-shadow: 0 0 30px rgba(0, 234, 255, 0.2);
+        }
+
+        .modal-header { border-bottom: 1px solid var(--glass-border); padding: 25px; }
+        .modal-body { padding: 30px; }
+
+        .modern-input {
+            width: 100%;
+            padding: 12px 15px;
+            margin-bottom: 20px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--glass-border);
+            border-radius: 10px;
+            color: #fff;
+            outline: none;
+        }
+
+        .modern-input:focus { border-color: var(--accent-cyan); }
+
+        /* EMPTY STATE */
+        .empty-center {
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            color: var(--text-muted);
+        }
+
+        .empty-center i { font-size: 80px; margin-bottom: 20px; opacity: 0.2; }
+
+        /* RESPONSIVE */
         @media (max-width: 991px) {
-            #sidebar { position: fixed; left: -100%; height: 100vh; }
-            #sidebar.show { left: 0; }
+            .sidebar {
+                position: fixed;
+                left: -100%;
+                width: 100%;
+                z-index: 1000;
+                height: 100%;
+            }
+
+            .sidebar.active { left: 0; }
+
+            .content-area { width: 100%; }
+
+            .ledger-header { padding: 15px 20px; }
+            .ledger-chat { padding: 20px; }
+            .ledger-footer { padding: 15px 20px; }
+            
+            .input-row { flex-direction: column; }
+            .btn-action { width: 100%; padding: 15px; justify-content: center; }
         }
     </style>
 </head>
-
 <body>
-<div id="app-wrapper">
-    
-    <!-- Sidebar -->
-    <div id="sidebar">
-        <a href="dashboard.jsp" class="brand-box">
-            <i class="fa-solid fa-wallet"></i> TrackMyCash
-        </a>
-        <div class="search-box">
-            <input type="text" id="searchCustomer" placeholder="Search customer...">
-        </div>
-        <div class="customer-list-container" id="customerList">
-            <%
-              if(con != null) {
-                  try {
-                      PreparedStatement ps = con.prepareStatement("SELECT * FROM customers WHERE user_id=?");
-                      ps.setInt(1, uid);
-                      ResultSet rs = ps.executeQuery();
-                      while(rs.next()){
-                          int cid2 = rs.getInt("id");
-                          String cname = rs.getString("name");
-                          if(cname == null || cname.isEmpty()) cname = "Unknown";
-                          
-                          PreparedStatement balPS = con.prepareStatement(
-                           "SELECT SUM(CASE WHEN type='got' THEN amount ELSE -amount END) b FROM transactions WHERE customer_id=?"
-                          );
-                          balPS.setInt(1, cid2);
-                          ResultSet balRS = balPS.executeQuery();
-                          double b = 0; if(balRS.next()) b = balRS.getDouble("b");
-                          overallBalance += b;
-                          
-                          String currentCid = request.getParameter("cid");
-                          String activeClass = (currentCid != null && currentCid.equals(String.valueOf(cid2))) ? "active" : "";
-            %>
-            <a href="dashboard.jsp?cid=<%=cid2%>" class="customer-item <%=activeClass%>" data-name="<%=cname.toLowerCase()%>">
-                <div class="avatar"><%= cname.substring(0, 1).toUpperCase() %></div>
-                <div class="customer-info">
-                    <div style="font-weight:500;"><%=cname%></div>
-                    <div style="font-size:0.8rem;" class="<%= b >= 0 ? "text-success" : "text-danger" %>">
-                        ₹<%=String.format("%.2f", b)%>
-                    </div>
-                </div>
-            </a>
-            <% 
-                          balRS.close(); balPS.close();
-                      } 
-                      rs.close(); ps.close();
-                  } catch (Exception e) { out.println("<!-- Sidebar Error: " + e.getMessage() + " -->"); }
-              } 
-            %>
-        </div>
-        <button class="add-customer-btn p-3 m-3 btn btn-primary" data-bs-toggle="modal" data-bs-target="#addCustomerModal">
-            <i class="fa-solid fa-plus me-2"></i>Add Customer
-        </button>
-    </div>
 
-    <!-- Main Content -->
-    <div id="main-content">
-        <div class="topbar">
-            <button class="btn text-white d-lg-none" onclick="document.getElementById('sidebar').classList.toggle('show')"><i class="fa-solid fa-bars"></i></button>
-            <h4 class="mb-0 fw-bold">Dashboard</h4>
-            <div class="d-flex align-items-center gap-3">
-                <button class="btn btn-link text-muted" onclick="document.body.classList.toggle('light-mode')"><i class="fa-solid fa-moon"></i></button>
-                <div class="dropdown">
-                    <div class="d-flex align-items-center gap-2" data-bs-toggle="dropdown" style="cursor:pointer;">
-                        <div class="avatar" style="margin:0;"><%=userName.substring(0,1).toUpperCase()%></div>
-                        <span class="d-none d-md-block"><%=userName%></span>
+    <!-- Top Navigation -->
+    <nav class="top-nav">
+        <div class="d-flex align-items-center gap-3">
+            <button class="icon-btn d-lg-none" id="mobileToggle">
+                <i class="fa-solid fa-bars"></i>
+            </button>
+            <h2>TrackMyCash</h2>
+        </div>
+        <div class="d-flex align-items-center gap-4">
+            <div class="d-none d-md-block">
+                Welcome, <span class="user-name"><%=userName%></span>
+            </div>
+            <a href="LogoutServlet" class="logout-btn">
+                <i class="fa-solid fa-power-off me-2"></i>Logout
+            </a>
+        </div>
+    </nav>
+
+    <div class="app-container">
+        <!-- Sidebar -->
+        <div class="sidebar" id="sidebar">
+            <div class="sidebar-header">
+                <div class="sidebar-title-row">
+                    <h3>Accounts</h3>
+                    <div id="menuIcon" class="icon-btn">
+                        <i class="fa-solid fa-ellipsis-vertical"></i>
                     </div>
-                    <ul class="dropdown-menu dropdown-menu-end">
-                        <li><a class="dropdown-item text-danger" href="LogoutServlet">Logout</a></li>
-                    </ul>
+                    
+                    <!-- Dropdown Popup -->
+                    <div id="menuPopup" style="display:none; position:absolute; top:45px; right:20px; background:#1e1e1e; border-radius:12px; box-shadow:0 8px 30px rgba(0,0,0,0.5); z-index:1100; min-width:160px; border: 1px solid var(--glass-border);">
+                        <a href="#" id="addCustomerBtn" style="display:block; padding:12px 20px; color:var(--accent-cyan); text-decoration:none; font-weight:600; font-size:14px;">
+                            <i class="fa-solid fa-user-plus me-2"></i>Add Customer
+                        </a>
+                    </div>
                 </div>
+                <input type="text" id="searchCustomer" placeholder="Filter identities...">
+            </div>
+
+            <div class="customer-list" id="customerList">
+                <%
+                  if(con != null) {
+                    try {
+                        PreparedStatement listPs = con.prepareStatement("SELECT * FROM customers WHERE user_id=?");
+                        listPs.setInt(1, uid);
+                        ResultSet listRs = listPs.executeQuery();
+                        while(listRs.next()){
+                            int listCid = listRs.getInt("id");
+                            PreparedStatement balPs = con.prepareStatement(
+                             "SELECT SUM(CASE WHEN type='got' THEN amount ELSE -amount END) b FROM transactions WHERE customer_id=?"
+                            );
+                            balPs.setInt(1, listCid);
+                            ResultSet balRs = balPs.executeQuery();
+                            double totalBal = 0;
+                            if(balRs.next()) totalBal = balRs.getDouble("b");
+                            
+                            String activeCid = request.getParameter("cid");
+                            boolean isActive = (activeCid != null && activeCid.equals(String.valueOf(listCid)));
+                %>
+                <div class="customer-item <%=isActive ? "active" : ""%>" onclick="location.href='dashboard.jsp?cid=<%=listCid%>'">
+                    <div class="customer-info">
+                        <b><%=listRs.getString("name")%></b>
+                        <span class="customer-balance <%= totalBal >= 0 ? "bal-pos" : "bal-neg" %>">
+                            <%= totalBal >= 0 ? "Receivable" : "Payable" %>: ₹<%=Math.abs(totalBal)%>
+                        </span>
+                    </div>
+                    <i class="fa-solid fa-chevron-right opacity-25"></i>
+                </div>
+                <% 
+                            balRs.close(); balPs.close();
+                        }
+                        listRs.close(); listPs.close();
+                    } catch (Exception e) {}
+                  }
+                %>
             </div>
         </div>
 
-            <% if (dbError != null) { %>
-            <div class="alert alert-danger bg-danger text-white border-0 m-4 shadow-sm" style="border-radius:12px;">
-                <div class="p-4">
-                    <p class="mb-0">Please check your Render Environment Variables. Error: <code><%= dbError %></code>. <br>Visit <a href="test-db.jsp" class="text-white fw-bold">test-db.jsp</a> for full diagnostics.</p>
+        <!-- Content Area -->
+        <div class="content-area">
+            <%
+                String cid = request.getParameter("cid");
+                if(cid != null && con != null){
+                  String customerName = "";
+                  double netTotal = 0;
+                  try {
+                      PreparedStatement cps = con.prepareStatement("SELECT name FROM customers WHERE id=?");
+                      cps.setInt(1, Integer.parseInt(cid));
+                      ResultSet crs = cps.executeQuery();
+                      if(crs.next()) customerName = crs.getString("name");
+                      crs.close(); cps.close();
+
+                      PreparedStatement tps = con.prepareStatement(
+                        "SELECT SUM(CASE WHEN type='got' THEN amount ELSE -amount END) total FROM transactions WHERE customer_id=?"
+                      );
+                      tps.setInt(1, Integer.parseInt(cid));
+                      ResultSet trs = tps.executeQuery();
+                      if(trs.next()) netTotal = trs.getDouble("total");
+                      trs.close(); tps.close();
+                  } catch (Exception e) {}
+            %>
+            
+            <div class="ledger-header">
+                <div class="d-flex flex-column">
+                    <h3 onclick="toggleHeaderMenu()">
+                        <%=customerName%>
+                        <i class="fa-solid fa-caret-down fs-6 opacity-50"></i>
+                    </h3>
+                    <div style="font-size: 14px; font-weight: 600; color: <%= netTotal >= 0 ? "var(--accent-cyan)" : "var(--accent-red)" %>;">
+                        Net Protocol: ₹<%=String.format("%.2f", Math.abs(netTotal))%> <%= netTotal >= 0 ? "(Credit)" : "(Debit)" %>
+                    </div>
                 </div>
+
+                <!-- Inner Menu (Update/Delete) -->
+                <div id="customerMenu" style="display:none; position:absolute; top:65px; left:40px; background:#1e1e1e; border-radius:12px; box-shadow:0 8px 30px rgba(0,0,0,0.5); z-index:1100; min-width:180px; border: 1px solid var(--glass-border);">
+                    <a href="#" onclick="openEditCustomer('<%=cid%>','<%=customerName%>','')" style="display:block; padding:12px 20px; color:var(--accent-cyan); text-decoration:none; font-size:14px;">
+                        <i class="fa-solid fa-pen-to-square me-2"></i>Edit Profile
+                    </a>
+                    <a href="#" onclick="deleteCustomer('<%=cid%>')" style="display:block; padding:12px 20px; color:var(--accent-red); text-decoration:none; font-size:14px;">
+                        <i class="fa-solid fa-trash-can me-2"></i>Purge Entity
+                    </a>
+                </div>
+
+                <div class="d-flex gap-2">
+                    <button class="icon-btn" onclick="location.reload()" title="Synchronize"><i class="fa-solid fa-rotate"></i></button>
+                </div>
+            </div>
+
+            <div class="ledger-chat" id="chatBox">
+                <%
+                    try {
+                        String lastLabel = "";
+                        SimpleDateFormat dateOnly = new SimpleDateFormat("dd-MM-yyyy");
+                        SimpleDateFormat displayDate = new SimpleDateFormat("dd MMM yyyy");
+                        SimpleDateFormat timeFmt = new SimpleDateFormat("hh:mm a");
+
+                        PreparedStatement ps2 = con.prepareStatement("SELECT * FROM transactions WHERE customer_id=? ORDER BY date");
+                        ps2.setInt(1, Integer.parseInt(cid));
+                        ResultSet rs2 = ps2.executeQuery();
+
+                        while(rs2.next()){
+                            Timestamp ts = rs2.getTimestamp("date");
+                            java.util.Date d = new java.util.Date(ts.getTime());
+                            String currDate = dateOnly.format(d);
+
+                            if(!currDate.equals(lastLabel)){
+                                String label = displayDate.format(d);
+                                Calendar c1 = Calendar.getInstance();
+                                Calendar c2 = Calendar.getInstance();
+                                c2.setTime(d);
+                                if(c1.get(Calendar.DAY_OF_YEAR) == c2.get(Calendar.DAY_OF_YEAR)) label = "Today";
+                                else {
+                                    c1.add(Calendar.DATE, -1);
+                                    if(c1.get(Calendar.DAY_OF_YEAR) == c2.get(Calendar.DAY_OF_YEAR)) label = "Yesterday";
+                                }
+                %>
+                <div class="date-divider"><span><%=label%></span></div>
+                <%
+                                lastLabel = currDate;
+                            }
+                            String type = rs2.getString("type");
+                %>
+                <div class="bubble <%=type.equals("gave") ? "paid" : "received"%>">
+                    <% if(rs2.getString("note") != null && !rs2.getString("note").isEmpty()) { %>
+                        <span class="note"><%=rs2.getString("note")%></span>
+                    <% } %>
+                    <span class="amount">₹<%=String.format("%.2f", rs2.getDouble("amount"))%></span>
+                    <div class="time"><%=timeFmt.format(d)%></div>
+                </div>
+                <% 
+                        }
+                        rs2.close(); ps2.close();
+                    } catch (Exception e) {}
+                %>
+            </div>
+
+            <div class="ledger-footer">
+                <form action="AddTransactionServlet" method="post" autocomplete="off">
+                    <input type="hidden" name="cid" value="<%=cid%>">
+                    <div class="input-row">
+                        <input type="number" name="amount" min="1" step="0.01" placeholder="Enter Amount (₹)" required>
+                        <input type="text" name="note" placeholder="Transaction protocol note...">
+                        <div class="d-flex gap-2">
+                            <button type="submit" name="type" value="gave" class="btn-action btn-paid">
+                                <i class="fa-solid fa-arrow-up"></i>PAID
+                            </button>
+                            <button type="submit" name="type" value="got" class="btn-action btn-received">
+                                <i class="fa-solid fa-arrow-down"></i>GOT
+                            </button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+
+            <% } else { %>
+            <div class="empty-center">
+                <i class="fa-solid fa-microchip"></i>
+                <h2>Select an Entity</h2>
+                <p>Initialize a secure ledger to view historical data and execute transactions.</p>
             </div>
             <% } %>
-
-            <%
-                if (con != null) {
-                    try {
-                        String cidStr = request.getParameter("cid");
-                        if(cidStr == null) {
-            %>
-            <div class="row g-4 mb-4">
-                <div class="col-md-4">
-                    <div class="fin-card primary">
-                        <div style="opacity:0.8;">Overall Balance</div>
-                        <h2 class="fw-bold mt-1">₹<%=String.format("%.2f", overallBalance)%></h2>
-                    </div>
-                </div>
-            </div>
-            <div class="row g-4">
-                <div class="col-md-8">
-                    <div class="fin-card">
-                        <h5 class="mb-4">Monthly Trends</h5>
-                        <canvas id="monthlyChart" height="200"></canvas>
-                    </div>
-                </div>
-                <div class="col-md-4">
-                    <div class="fin-card">
-                        <h5 class="mb-4">Recent Activity</h5>
-                        <p class="text-muted">Select a customer to view transactions.</p>
-                    </div>
-                </div>
-            </div>
-            <% } else { 
-                int cid = Integer.parseInt(cidStr);
-                String cName = ""; double cTotal = 0;
-                PreparedStatement ps = con.prepareStatement("SELECT * FROM customers WHERE id=?");
-                ps.setInt(1, cid);
-                ResultSet rs = ps.executeQuery();
-                if(rs.next()) cName = rs.getString("name");
-                rs.close(); ps.close();
-                
-                PreparedStatement psTotal = con.prepareStatement("SELECT SUM(CASE WHEN type='got' THEN amount ELSE -amount END) as t FROM transactions WHERE customer_id=?");
-                psTotal.setInt(1, cid);
-                ResultSet rsTotal = psTotal.executeQuery();
-                if(rsTotal.next()) cTotal = rsTotal.getDouble("t");
-                rsTotal.close(); psTotal.close();
-            %>
-            <div class="d-flex justify-content-between align-items-center mb-4">
-                <div>
-                    <h2 class="mb-0"><%=cName%></h2>
-                    <div class="<%= cTotal >= 0 ? "text-success" : "text-danger" %> fw-bold">Balance: ₹<%=String.format("%.2f", cTotal)%></div>
-                </div>
-                <div class="btn-group">
-                    <button class="btn btn-outline-info" onclick="openEditCustomer('<%=cid%>','<%=cName%>','')">Edit</button>
-                    <button class="btn btn-outline-danger" onclick="deleteCustomer('<%=cid%>')">Delete</button>
-                </div>
-            </div>
-            <div class="table-container shadow-sm">
-                <table class="table table-hover mb-0">
-                    <thead class="table-dark"><tr><th>Date</th><th>Note</th><th class="text-end">Amount</th><th class="text-center">Type</th></tr></thead>
-                    <tbody>
-                        <%
-                            PreparedStatement tps = con.prepareStatement("SELECT * FROM transactions WHERE customer_id=? ORDER BY date DESC");
-                            tps.setInt(1, cid); ResultSet trs = tps.executeQuery();
-                            SimpleDateFormat sdf = new SimpleDateFormat("dd MMM, yyyy hh:mm a");
-                            while(trs.next()){
-                                String type = trs.getString("type");
-                        %>
-                        <tr>
-                            <td><%= trs.getTimestamp("date") != null ? sdf.format(new java.util.Date(trs.getTimestamp("date").getTime())) : "-" %></td>
-                            <td><%= trs.getString("note") != null ? trs.getString("note") : "-" %></td>
-                            <td class="text-end fw-bold">₹<%=String.format("%.2f", trs.getDouble("amount"))%></td>
-                            <td class="text-center"><span class="<%= "got".equals(type) ? "badge-income" : "badge-expense" %>"><%= "got".equals(type) ? "Received" : "Paid" %></span></td>
-                        </tr>
-                        <% } trs.close(); tps.close(); %>
-                    </tbody>
-                </table>
-            </div>
-            <button class="fab-btn" data-bs-toggle="modal" data-bs-target="#addTxnModal"><i class="fa-solid fa-plus"></i></button>
-            <% } 
-                    } catch (Exception e) { out.println("<div class='alert alert-warning'>Error: " + e.getMessage() + "</div>"); }
-                } 
-            %>
         </div>
     </div>
-</div>
 
-<!-- Modals -->
-<div class="modal fade" id="addCustomerModal" tabindex="-1"><div class="modal-dialog modal-dialog-centered"><div class="modal-content"><div class="modal-header"><h5>Add Customer</h5><button class="btn-close" data-bs-dismiss="modal"></button></div><form action="AddCustomerServlet" method="post"><div class="modal-body"><input type="text" name="name" class="form-control mb-3" placeholder="Name" required><input type="text" name="phone" class="form-control" placeholder="Phone"></div><div class="modal-footer"><button type="submit" class="btn btn-primary">Save</button></div></form></div></div></div>
+    <!-- Modals -->
+    <!-- Add Customer Modal -->
+    <div id="addCustomerModal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.7); backdrop-filter:blur(5px); justify-content:center; align-items:center; z-index:2000;">
+        <div class="modal-content" style="width:350px; padding:30px;">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h3 style="margin:0; font-size:20px; color:var(--accent-cyan);">Register Node</h3>
+                <span id="closeModal" style="cursor:pointer; font-size:24px;">&times;</span>
+            </div>
+            
+            <% if ("exists".equals(request.getParameter("error"))) { %>
+                <div class="alert alert-danger py-2 small mb-3">Collision: Identity already exists.</div>
+            <% } %>
 
-<% if(request.getParameter("cid") != null) { %>
-<div class="modal fade" id="addTxnModal" tabindex="-1"><div class="modal-dialog modal-dialog-centered"><div class="modal-content"><div class="modal-header"><h5>Add Transaction</h5><button class="btn-close" data-bs-dismiss="modal"></button></div><form action="AddTransactionServlet" method="post"><div class="modal-body"><input type="hidden" name="cid" value="<%=request.getParameter("cid")%>"><input type="number" name="amount" class="form-control mb-3" placeholder="Amount" required><input type="text" name="note" class="form-control mb-3" placeholder="Note"><div class="d-flex gap-2"><button type="submit" name="type" value="gave" class="btn btn-danger w-50">Paid</button><button type="submit" name="type" value="got" class="btn btn-success w-50">Received</button></div></div></form></div></div></div>
-<% } %>
+            <form action="AddCustomerServlet" method="post">
+                <input type="text" name="name" class="modern-input" placeholder="Entity Name" required>
+                <input type="text" name="phone" class="modern-input" placeholder="Contact Protocol (Optional)">
+                <button type="submit" class="btn-action btn-paid w-100 py-3 mt-2">CONFIRM LINK</button>
+            </form>
+        </div>
+    </div>
 
-<%@ include file="UpdateCustomer.jsp" %>
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-<script>
-    function openEditCustomer(id, name, phone) {
-        document.getElementById('editCid').value = id;
-        document.getElementById('editName').value = name;
-        document.getElementById('editPhone').value = phone;
-        new bootstrap.Modal(document.getElementById('editCustomerModal')).show();
-    }
-    function deleteCustomer(id) { if(confirm("Delete?")) window.location.href="DeleteCustomerServlet?cid="+id; }
-    if(document.getElementById('monthlyChart')) {
-        new Chart(document.getElementById('monthlyChart'), {
-            type: 'line',
-            data: { labels: ['Jan','Feb','Mar','Apr','May','Jun'], datasets: [{ label: 'Expenses', data: [12,19,3,5,2,3], borderColor: '#3b82f6', tension: 0.3 }] },
-            options: { responsive: true, plugins: { legend: { display: false } } }
+    <!-- Edit Customer Modal -->
+    <div id="editCustomerModal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.7); backdrop-filter:blur(5px); justify-content:center; align-items:center; z-index:2000;">
+        <div class="modal-content" style="width:350px; padding:30px;">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h3 style="margin:0; font-size:20px; color:var(--accent-cyan);">Edit Profile</h3>
+                <span onclick="closeEditModal()" style="cursor:pointer; font-size:24px;">&times;</span>
+            </div>
+            <form action="UpdateCustomerServlet" method="post">
+                <input type="hidden" name="cid" id="editCid">
+                <input type="text" name="name" id="editName" class="modern-input" placeholder="Entity Name" required>
+                <input type="text" name="phone" id="editPhone" class="modern-input" placeholder="Contact Protocol">
+                <button type="submit" class="btn-action btn-paid w-100 py-3 mt-2">UPDATE DATA</button>
+            </form>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Sidebar Toggle for Mobile
+        document.getElementById('mobileToggle').addEventListener('click', () => {
+            document.getElementById('sidebar').classList.toggle('active');
         });
-    }
-</script>
+
+        // Dropdown Menu Logic
+        const menuIcon = document.getElementById("menuIcon");
+        const menuPopup = document.getElementById("menuPopup");
+        menuIcon.addEventListener("click", (e) => {
+            e.stopPropagation();
+            menuPopup.style.display = menuPopup.style.display === "block" ? "none" : "block";
+        });
+
+        function toggleHeaderMenu() {
+            const menu = document.getElementById("customerMenu");
+            menu.style.display = menu.style.display === "block" ? "none" : "block";
+        }
+
+        // Close Popups on Outside Click
+        document.addEventListener("click", (e) => {
+            if (menuPopup) menuPopup.style.display = "none";
+            const headerMenu = document.getElementById("customerMenu");
+            if (headerMenu && !e.target.closest('.ledger-header')) headerMenu.style.display = "none";
+        });
+
+        // Search Filter
+        document.getElementById('searchCustomer').addEventListener('input', function() {
+            let filter = this.value.toLowerCase();
+            document.querySelectorAll('.customer-item').forEach(function(item) {
+                let text = item.innerText.toLowerCase();
+                item.style.display = text.includes(filter) ? 'flex' : 'none';
+            });
+        });
+
+        // Modal Logic
+        const addModal = document.getElementById("addCustomerModal");
+        document.getElementById("addCustomerBtn").addEventListener("click", (e) => {
+            e.preventDefault();
+            addModal.style.display = "flex";
+        });
+
+        document.getElementById("closeModal").addEventListener("click", () => addModal.style.display = "none");
+
+        window.onclick = (e) => {
+            if (e.target === addModal) addModal.style.display = "none";
+            const editModal = document.getElementById("editCustomerModal");
+            if (e.target === editModal) editModal.style.display = "none";
+        };
+
+        function openEditCustomer(id, name, phone) {
+            document.getElementById("editCid").value = id;
+            document.getElementById("editName").value = name;
+            document.getElementById("editPhone").value = phone;
+            document.getElementById("editCustomerModal").style.display = "flex";
+        }
+
+        function closeEditModal() {
+            document.getElementById("editCustomerModal").style.display = "none";
+        }
+
+        function deleteCustomer(cid) {
+            if (confirm("DANGER: Purging this entity will delete all historical data. Continue?")) {
+                window.location.href = "DeleteCustomerServlet?cid=" + cid;
+            }
+        }
+
+        // Auto Scroll Ledger
+        const chatBox = document.getElementById("chatBox");
+        if (chatBox) chatBox.scrollTop = chatBox.scrollHeight;
+
+        <% if ("addCustomer".equals(request.getParameter("popup"))) { %>
+            addModal.style.display = "flex";
+        <% } %>
+    </script>
 </body>
 </html>
 <% if (con != null) { try { con.close(); } catch(Exception e) {} } %>
